@@ -75,7 +75,28 @@ export default function OrgManagementPage() {
           spent: 0, // New package starts with no consumption
           isPackageRow: true, // Mark as package row
         }
-        return [...prev, newPackageRow]
+        
+        // Find the index of the workspace and insert the new package row right after it
+        // Also find where other package rows for this workspace end
+        const workspaceIndex = prev.findIndex(ws => ws.id === workspaceId)
+        if (workspaceIndex === -1) return [...prev, newPackageRow]
+        
+        // Find the last package row for this workspace (if any)
+        let insertIndex = workspaceIndex + 1
+        for (let i = workspaceIndex + 1; i < prev.length; i++) {
+          if (prev[i].name === workspace.name && prev[i].isPackageRow) {
+            insertIndex = i + 1
+          } else {
+            break
+          }
+        }
+        
+        // Insert the new package row right after the workspace or after its existing packages
+        return [
+          ...prev.slice(0, insertIndex),
+          newPackageRow,
+          ...prev.slice(insertIndex),
+        ]
       }
 
       // If reclaiming all remaining balance (or more), set allocated to null
