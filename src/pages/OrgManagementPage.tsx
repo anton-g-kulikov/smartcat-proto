@@ -17,6 +17,23 @@ export default function OrgManagementPage() {
     ? workspaces 
     : workspaces.filter(ws => ws.isMyWorkspace)
 
+  // Calculate available org balance (matching progress bar logic)
+  // Only count spent from workspaces with Share Smartwords ON (fullAccess: true) OR allocated is null
+  const orgLevelSpent = workspaces.reduce((sum, ws) => {
+    if (ws.fullAccess || ws.allocated === null) {
+      return sum + (ws.spent || 0)
+    }
+    return sum
+  }, 0)
+  
+  // Calculate total allocated
+  const totalAllocated = workspaces
+    .filter(ws => !ws.fullAccess && ws.allocated !== null && (ws.allocated || 0) > 0)
+    .reduce((sum, ws) => sum + (ws.allocated || 0), 0)
+  
+  // Available org balance = initialTotal - totalAllocated - orgLevelSpent
+  const availableOrgBalance = org.initialSmartwordsTotal - totalAllocated - orgLevelSpent
+
   // Handle moving Smartwords between organizations
   const handleMoveSmartwords = (targetOrgId: string, amount: number) => {
     // Update current organization (decrease total balance - moving Smartwords out)
@@ -40,18 +57,55 @@ export default function OrgManagementPage() {
     const delta = mode === 'allocate' ? amount : -amount
 
     // Update workspace allocated balance
-    setWorkspaces(prev =>
-      prev.map(ws =>
+    setWorkspaces(prev => {
+      const workspace = prev.find(ws => ws.id === workspaceId)
+      if (!workspace) return prev
+
+      const currentAllocated = workspace.allocated ?? 0
+      const currentSpent = workspace.spent ?? 0
+      const remainingBalance = currentAllocated - currentSpent
+      
+      // If allocating to a workspace that already has a package, create a new package row
+      if (mode === 'allocate' && workspace.allocated !== null && workspace.allocated > 0) {
+        // Create a new package row
+        const newPackageRow: WorkspaceRow = {
+          ...workspace,
+          id: `${workspaceId}-${Date.now()}`, // Unique ID for the new package
+          allocated: amount,
+          spent: 0, // New package starts with no consumption
+          isPackageRow: true, // Mark as package row
+        }
+        return [...prev, newPackageRow]
+      }
+
+      // If reclaiming all remaining balance (or more), set allocated to null
+      // This ensures "Not set" is shown and spent remains unchanged
+      const willBeFullyReclaimed = mode === 'reclaim' && (amount >= remainingBalance)
+
+      const updated = prev.map(ws =>
         ws.id === workspaceId
           ? {
               ...ws,
               allocated: ws.allocated === null 
-                ? (mode === 'allocate' ? amount : 0)
-                : Math.max(0, (ws.allocated || 0) + delta),
+                ? (mode === 'allocate' ? amount : null)
+                : willBeFullyReclaimed
+                  ? null // Set to null if fully reclaimed - this makes spent count as org-level consumption
+                  : Math.max(0, (ws.allocated || 0) + delta),
+              // spent remains unchanged - it tracks all consumption
             }
           : ws
       )
-    )
+
+      // If reclaiming from a package row and it becomes fully reclaimed, remove it
+      if (mode === 'reclaim') {
+        const updatedWorkspace = updated.find(ws => ws.id === workspaceId)
+        if (updatedWorkspace?.isPackageRow && (updatedWorkspace.allocated === null || updatedWorkspace.allocated === 0)) {
+          return updated.filter(ws => ws.id !== workspaceId)
+        }
+      }
+
+      return updated
+    })
 
     // Update organization balance
     // When allocating: decrease org total (moving Smartwords to workspace)
@@ -80,14 +134,56 @@ export default function OrgManagementPage() {
     )
   }
 
+  // Handle toggling org-level subscription access for new workspaces
+  const handleToggleOrgSubscriptionAccess = (checked: boolean) => {
+    setOrg(prev => ({
+      ...prev,
+      allowNewWorkspacesOrgSubscription: checked,
+    }))
+  }
+
+  // Handle toggling org-level smartwords access for new workspaces
+  const handleToggleOrgSmartwordsAccess = (checked: boolean) => {
+    setOrg(prev => ({
+      ...prev,
+      allowNewWorkspacesOrgSmartwords: checked,
+    }))
+  }
+
+  // Handle contact us button
+  const handleContactUs = () => {
+    // TODO: Implement contact us functionality
+    console.log('Contact us clicked')
+  }
+
+  // Handle create new workspace button
+  const handleCreateWorkspace = () => {
+    // TODO: Implement create workspace functionality
+    console.log('Create new workspace clicked')
+  }
+
+  // Handle add new admin button
+  const handleAddAdmin = () => {
+    // TODO: Implement add admin functionality
+    console.log('Add new admin clicked')
+  }
+
   return (
     <div className="min-h-full p-8 space-y-6">
       <PageHeader />
       <OrgHeaderSection org={org} />
-      <StatsCardsRow org={org} />
+      <StatsCardsRow 
+        org={org}
+        onToggleSubscriptionAccess={handleToggleOrgSubscriptionAccess}
+        onToggleSmartwordsAccess={handleToggleOrgSmartwordsAccess}
+        onContactUs={handleContactUs}
+        onCreateWorkspace={handleCreateWorkspace}
+        onAddAdmin={handleAddAdmin}
+      />
       <SmartwordBalanceSection 
         org={org}
         organizations={organizations}
+        workspaces={workspaces}
         onMoveSmartwords={handleMoveSmartwords}
       />
       <WorkspacesSection 
@@ -99,7 +195,7 @@ export default function OrgManagementPage() {
         onToggleFullAccess={handleToggleFullAccess}
         onToggleSubscriptionAccess={handleToggleSubscriptionAccess}
         onAllocate={handleWorkspaceAllocation}
-        currentOrgBalance={org.smartwordsTotal - org.smartwordsUsed}
+        currentOrgBalance={availableOrgBalance}
       />
     </div>
   )

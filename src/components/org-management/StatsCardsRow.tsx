@@ -4,9 +4,21 @@ import type { OrgSummary } from '@/types/orgManagement'
 
 interface StatsCardsRowProps {
   org: OrgSummary
+  onToggleSubscriptionAccess?: (checked: boolean) => void
+  onToggleSmartwordsAccess?: (checked: boolean) => void
+  onContactUs?: () => void
+  onCreateWorkspace?: () => void
+  onAddAdmin?: () => void
 }
 
-export function StatsCardsRow({ org }: StatsCardsRowProps) {
+export function StatsCardsRow({ 
+  org,
+  onToggleSubscriptionAccess,
+  onToggleSmartwordsAccess,
+  onContactUs,
+  onCreateWorkspace,
+  onAddAdmin,
+}: StatsCardsRowProps) {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num)
   }
@@ -26,27 +38,39 @@ export function StatsCardsRow({ org }: StatsCardsRowProps) {
         label="Subscription"
         value={org.subscription}
         icon={Circle}
+        switchLabel="Allow NEW Workspaces use ORG Subscription"
+        switchChecked={org.allowNewWorkspacesOrgSubscription}
+        onSwitchChange={onToggleSubscriptionAccess}
       />
       <StatCard
         label="Smartwords"
         value={formatNumber(org.initialSmartwordsTotal)}
         icon={Circle}
+        switchLabel="Allow NEW Workspaces use ORG Smartwords"
+        switchChecked={org.allowNewWorkspacesOrgSmartwords}
+        onSwitchChange={onToggleSmartwordsAccess}
       />
       <StatCard
         label="Renewal date"
         value={formatDate(org.renewalDate)}
         icon={Calendar}
+        buttonLabel="Contact us"
+        onButtonClick={onContactUs}
       />
       <StatCard
         label="Workspaces"
         value={org.workspacesCount.toString()}
         icon={Folder}
+        buttonLabel="Create new workspace"
+        onButtonClick={onCreateWorkspace}
       />
       <StatCard
         label="Organization admins"
         value=""
         icon={Users}
         orgAdmins={org.organizationAdmins}
+        buttonLabel="Add new admin"
+        onButtonClick={onAddAdmin}
       />
     </section>
   )

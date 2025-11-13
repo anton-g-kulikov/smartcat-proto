@@ -7,7 +7,7 @@ interface OrgHeaderSectionProps {
 
 export function OrgHeaderSection({ org }: OrgHeaderSectionProps) {
   return (
-    <section className="flex items-center justify-between">
+    <section className="flex items-center">
       <div className="flex items-center gap-4">
         {org.logoUrl ? (
           <img 
@@ -24,9 +24,6 @@ export function OrgHeaderSection({ org }: OrgHeaderSectionProps) {
         )}
         <h2 className="text-2xl font-bold text-[var(--sc-text)]">{org.name}</h2>
       </div>
-      <button className="px-4 py-2 rounded-2xl bg-[var(--sc-primary)] text-white hover:opacity-90 transition-opacity font-medium">
-        Contact us
-      </button>
     </section>
   )
 }

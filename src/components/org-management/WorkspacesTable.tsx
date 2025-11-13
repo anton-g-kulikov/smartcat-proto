@@ -9,6 +9,7 @@ import { Avatar } from '@/components/navigation/Avatar'
 import { FullAccessSwitch } from './FullAccessSwitch'
 import { ActionsMenu } from './ActionsMenu'
 import { AllocationModal } from './AllocationModal'
+import { ReclaimOnShareDialog } from './ReclaimOnShareDialog'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { Info } from 'lucide-react'
 import type { WorkspaceRow } from '@/types/orgManagement'
@@ -34,6 +35,15 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
     workspace: null,
     mode: 'allocate',
   })
+  const [reclaimDialog, setReclaimDialog] = useState<{
+    open: boolean
+    workspace: WorkspaceRow | null
+    totalAllocated?: number
+    allPackages?: WorkspaceRow[]
+  }>({
+    open: false,
+    workspace: null,
+  })
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num)
@@ -51,24 +61,31 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
             className="w-4 h-4 text-[var(--sc-primary)] rounded border-gray-300"
           />
         ),
-        cell: ({ row }) => (
-          <input
-            type="checkbox"
-            checked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            className="w-4 h-4 text-[var(--sc-primary)] rounded border-gray-300"
-          />
-        ),
+        cell: ({ row }) => {
+          if (row.original.isPackageRow) return null
+          return (
+            <input
+              type="checkbox"
+              checked={row.getIsSelected()}
+              onChange={row.getToggleSelectedHandler()}
+              className="w-4 h-4 text-[var(--sc-primary)] rounded border-gray-300"
+            />
+          )
+        },
       }),
       columnHelper.accessor('name', {
         header: 'WORKSPACE',
-        cell: (info) => (
-          <span className="font-medium text-[var(--sc-text)]">{info.getValue()}</span>
-        ),
+        cell: (info) => {
+          if (info.row.original.isPackageRow) return null
+          return (
+            <span className="font-medium text-[var(--sc-text)]">{info.getValue()}</span>
+          )
+        },
       }),
       columnHelper.accessor('admins', {
         header: 'ADMINS',
         cell: (info) => {
+          if (info.row.original.isPackageRow) return null
           const admins = info.getValue()
           return (
             <div className="flex items-center gap-2">
@@ -90,14 +107,14 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
       columnHelper.accessor('subscriptionAccess', {
         header: () => (
           <div className="flex items-center gap-1">
-            <span>Access SUBSCRIPTION</span>
+            <span>USE ORG SUBSCRIPTION</span>
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button
                     type="button"
                     className="text-gray-400 hover:text-gray-600"
-                    aria-label="Information about Access Subscription"
+                    aria-label="Information about Use Org Subscription"
                   >
                     <Info className="w-3 h-3" />
                   </button>
@@ -117,6 +134,7 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
         ),
         cell: (info) => {
           const workspace = info.row.original
+          if (workspace.isPackageRow) return null
           return (
             <FullAccessSwitch
               checked={info.getValue()}
@@ -128,14 +146,14 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
       columnHelper.accessor('fullAccess', {
         header: () => (
           <div className="flex items-center gap-1">
-            <span>Access Smartwords</span>
+            <span>USE ORG SMARTWORDS</span>
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button
                     type="button"
                     className="text-gray-400 hover:text-gray-600"
-                    aria-label="Information about Access Smartwords"
+                    aria-label="Information about Use Org Smartwords"
                   >
                     <Info className="w-3 h-3" />
                   </button>
@@ -155,10 +173,32 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
         ),
         cell: (info) => {
           const workspace = info.row.original
+          if (workspace.isPackageRow) return null
+          const handleToggle = (checked: boolean) => {
+            // If turning ON, check if workspace has any allocated packages (including package rows)
+            if (checked && !workspace.fullAccess) {
+              // Find all packages for this workspace (by name, including package rows)
+              const allPackagesForWorkspace = workspaces.filter(
+                ws => ws.name === workspace.name && ws.allocated !== null && (ws.allocated || 0) > 0
+              )
+              const totalAllocated = allPackagesForWorkspace.reduce((sum, ws) => sum + (ws.allocated || 0), 0)
+              
+              if (totalAllocated > 0) {
+                // Show reclaim dialog with total allocated amount
+                setReclaimDialog({ open: true, workspace, totalAllocated, allPackages: allPackagesForWorkspace })
+              } else {
+                // No packages to reclaim, toggle directly
+                onToggleFullAccess(workspace.id, checked)
+              }
+            } else {
+              // Otherwise, toggle directly
+              onToggleFullAccess(workspace.id, checked)
+            }
+          }
           return (
             <FullAccessSwitch
               checked={info.getValue()}
-              onCheckedChange={(checked) => onToggleFullAccess(workspace.id, checked)}
+              onCheckedChange={handleToggle}
             />
           )
         },
@@ -166,14 +206,14 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
       columnHelper.accessor('allocated', {
         header: () => (
           <div className="flex items-center gap-1">
-            <span>ALLOCATED BALANCE</span>
+            <span>ALLOCATED PACKAGE</span>
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button
                     type="button"
                     className="text-gray-400 hover:text-gray-600"
-                    aria-label="Information about Allocated Balance"
+                    aria-label="Information about Allocated Package"
                   >
                     <Info className="w-3 h-3" />
                   </button>
@@ -200,17 +240,56 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
           )
         },
       }),
-      columnHelper.accessor('spent', {
+      columnHelper.display({
+        id: 'currentBalance',
         header: () => (
           <div className="flex items-center gap-1">
-            <span>CURRENT BALANCE</span>
+            <span>REMAINING</span>
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <button
                     type="button"
                     className="text-gray-400 hover:text-gray-600"
-                    aria-label="Information about Current Balance"
+                    aria-label="Information about Remaining"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
+                    sideOffset={5}
+                  >
+                    The remaining available balance in this workspace package
+                    <Tooltip.Arrow className="fill-gray-900" />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          </div>
+        ),
+        cell: (info) => {
+          const workspace = info.row.original
+          const allocated = workspace.allocated ?? 0
+          const spent = workspace.spent
+          const currentBalance = Math.max(0, allocated - spent)
+          return (
+            <span className="text-sm text-gray-700">{formatNumber(currentBalance)}</span>
+          )
+        },
+      }),
+      columnHelper.accessor('spent', {
+        header: () => (
+          <div className="flex items-center gap-1">
+            <span>CONSUMED</span>
+            <Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-600"
+                    aria-label="Information about Consumed Smartwords"
                   >
                     <Info className="w-3 h-3" />
                   </button>
@@ -229,7 +308,7 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
           </div>
         ),
         cell: (info) => (
-          <span className="text-sm text-gray-700">{formatNumber(info.getValue())}</span>
+          <span className="text-sm text-gray-400">{formatNumber(info.getValue())}</span>
         ),
       }),
       columnHelper.display({
@@ -237,6 +316,20 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
         header: () => <span>ACTIONS</span>,
         cell: ({ row }) => {
           const workspace = row.original
+          // For package rows, only show allocate/reclaim actions
+          if (workspace.isPackageRow) {
+            return (
+              <ActionsMenu
+                workspaceId={workspace.id}
+                onAllocate={() =>
+                  setAllocationModal({ open: true, workspace, mode: 'allocate' })
+                }
+                onReclaim={() =>
+                  setAllocationModal({ open: true, workspace, mode: 'reclaim' })
+                }
+              />
+            )
+          }
           return (
             <ActionsMenu
               workspaceId={workspace.id}
@@ -331,6 +424,36 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
           currentOrgBalance={currentOrgBalance}
           mode={allocationModal.mode}
           onConfirm={handleAllocationConfirm}
+          workspaceSpent={allocationModal.workspace.spent}
+        />
+      )}
+
+      {reclaimDialog.workspace && (
+        <ReclaimOnShareDialog
+          open={reclaimDialog.open}
+          onOpenChange={(open) => setReclaimDialog({ ...reclaimDialog, open })}
+          workspaceName={reclaimDialog.workspace.name}
+          allocatedAmount={reclaimDialog.totalAllocated || reclaimDialog.workspace.allocated || 0}
+          packageCount={reclaimDialog.allPackages?.length || 1}
+          onConfirm={() => {
+            // Reclaim all packages for this workspace and enable sharing
+            const workspace = reclaimDialog.workspace!
+            const packagesToReclaim = reclaimDialog.allPackages || [workspace]
+            
+            // Reclaim each package
+            packagesToReclaim.forEach(pkg => {
+              if (pkg.allocated !== null && pkg.allocated > 0) {
+                // Calculate remaining balance for each package
+                const remaining = Math.max(0, (pkg.allocated || 0) - (pkg.spent || 0))
+                if (remaining > 0) {
+                  onAllocate(pkg.id, remaining, 'reclaim')
+                }
+              }
+            })
+            
+            // Enable sharing for the main workspace
+            onToggleFullAccess(workspace.id, true)
+          }}
         />
       )}
     </>

@@ -1,3 +1,4 @@
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
@@ -12,6 +13,7 @@ interface AllocationModalProps {
   currentOrgBalance: number
   mode: 'allocate' | 'reclaim'
   onConfirm: (amount: number) => void
+  workspaceSpent?: number // Amount already spent from the workspace package
 }
 
 const createSchema = (maxAmount: number) =>
@@ -31,9 +33,18 @@ export function AllocationModal({
   currentOrgBalance,
   mode,
   onConfirm,
+  workspaceSpent = 0,
 }: AllocationModalProps) {
-  const maxAmount = mode === 'allocate' ? currentOrgBalance : (currentWorkspaceBalance ?? 0)
+  // For reclaim mode, max amount is the remaining balance (allocated - spent)
+  // For allocate mode, max amount is the org balance
+  const maxAmount = mode === 'allocate' 
+    ? currentOrgBalance 
+    : Math.max(0, (currentWorkspaceBalance ?? 0) - workspaceSpent)
   const schema = createSchema(maxAmount)
+  
+  // Prepopulate with max amount when reclaiming
+  const defaultAmount = mode === 'reclaim' ? maxAmount : 0
+  
   const {
     register,
     handleSubmit,
@@ -43,14 +54,25 @@ export function AllocationModal({
     reset,
   } = useForm<{ amount: number }>({
     resolver: zodResolver(schema),
-    defaultValues: { amount: 0 },
+    defaultValues: { amount: defaultAmount },
   })
+  
+  // Update form value when modal opens in reclaim mode
+  React.useEffect(() => {
+    if (open && mode === 'reclaim') {
+      setValue('amount', maxAmount, { shouldValidate: true })
+    } else if (open && mode === 'allocate') {
+      setValue('amount', 0, { shouldValidate: true })
+    }
+  }, [open, mode, maxAmount, setValue])
 
   const amount = watch('amount')
+  // For reclaim mode: if reclaiming all remaining, balance becomes 0
+  // Otherwise, it's allocated - amount reclaimed
   const projectedWorkspaceBalance =
     mode === 'allocate'
       ? (currentWorkspaceBalance ?? 0) + amount
-      : (currentWorkspaceBalance ?? 0) - amount
+      : Math.max(0, maxAmount - amount) // Remaining reclaimable - amount being reclaimed
   const projectedOrgBalance =
     mode === 'allocate' ? currentOrgBalance - amount : currentOrgBalance + amount
 
@@ -105,13 +127,27 @@ export function AllocationModal({
               </label>
               <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Current workspace balance:</span>
+                  <span className="text-gray-600">
+                    {mode === 'reclaim' ? 'Allocated package:' : 'Current workspace balance:'}
+                  </span>
                   <span className="font-medium">
                     {currentWorkspaceBalance === null
                       ? 'Not set'
                       : formatNumber(currentWorkspaceBalance)}
                   </span>
                 </div>
+                {mode === 'reclaim' && currentWorkspaceBalance !== null && workspaceSpent > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Used:</span>
+                    <span className="font-medium">{formatNumber(workspaceSpent)}</span>
+                  </div>
+                )}
+                {mode === 'reclaim' && currentWorkspaceBalance !== null && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Remaining (reclaimable):</span>
+                    <span className="font-medium">{formatNumber(maxAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">
                     Current organization balance:
