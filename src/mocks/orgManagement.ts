@@ -47,7 +47,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true, // Toggle ON (default)
     fullAccess: true, // Toggle ON
     allocated: null, // "Not set"
-    spent: 600000, // Used Smartwords
+    spent: 587432, // Used Smartwords
     isMyWorkspace: false,
   },
   {
@@ -89,7 +89,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true, // Toggle ON (default)
     fullAccess: false, // Toggle OFF
     allocated: 500000, // 500K allocated by default
-    spent: 200000, // 200K used from allocated balance (not from org-level)
+    spent: 187654, // Used from allocated balance (not from org-level)
     isMyWorkspace: false,
   },
   {
@@ -132,7 +132,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 150000,
+    spent: 142389,
     isMyWorkspace: false,
   },
   {
@@ -150,7 +150,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 80000,
+    spent: 78921,
     isMyWorkspace: false,
   },
   {
@@ -174,7 +174,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 120000,
+    spent: 123456,
     isMyWorkspace: false,
   },
   {
@@ -192,7 +192,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 45000,
+    spent: 45678,
     isMyWorkspace: false,
   },
   {
@@ -216,7 +216,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 95000,
+    spent: 93421,
     isMyWorkspace: false,
   },
   {
@@ -234,7 +234,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 35000,
+    spent: 34567,
     isMyWorkspace: false,
   },
   {
@@ -258,7 +258,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
     subscriptionAccess: true,
     fullAccess: true, // Access to org Smartwords
     allocated: null,
-    spent: 110000,
+    spent: 108234,
     isMyWorkspace: false,
   },
 ]
