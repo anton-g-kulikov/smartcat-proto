@@ -18,6 +18,8 @@ export type OrgSummary = {
     avatarColor: string
   }[]
   smartwordsSharingEnabled: boolean
+  allowNewWorkspacesOrgSubscription: boolean
+  allowNewWorkspacesOrgSmartwords: boolean
 }
 
 export type WorkspaceRow = {
@@ -36,6 +38,7 @@ export type WorkspaceRow = {
   allocated: number | null
   spent: number
   isMyWorkspace?: boolean
+  isPackageRow?: boolean // If true, only show package columns (allocated, used, current package)
 }
 
 export type WorkspaceTab = 'all' | 'my'
