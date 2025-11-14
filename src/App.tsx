@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AppLayout } from './components/layout/AppLayout'
@@ -8,10 +9,31 @@ import OrgManagementPage from './pages/OrgManagementPage'
 import ChatsPage from './pages/ChatsPage'
 import LoginPage from './pages/LoginPage'
 
+// Component to handle GitHub Pages 404.html redirect
+function RedirectHandler() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // Check if we have the query string format from 404.html redirect
+    const queryParams = new URLSearchParams(location.search)
+    const path = queryParams.get('/')
+    
+    if (path) {
+      // Convert the path back from the query string format
+      const decodedPath = path.replace(/~and~/g, '&')
+      navigate(decodedPath + location.hash, { replace: true })
+    }
+  }, [location, navigate])
+
+  return null
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter basename="/smartcat-proto">
+        <RedirectHandler />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
