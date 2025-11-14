@@ -293,5 +293,12 @@ export const mockOrganizations = [
     avatarColor: '#dc2626',
     currentBalance: 1500000,
   },
+  {
+    id: '5',
+    name: 'Procter & Gamble',
+    initial: 'PG',
+    avatarColor: '#7c3aed',
+    currentBalance: 2500000,
+  },
 ]
 
