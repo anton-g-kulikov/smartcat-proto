@@ -13,6 +13,8 @@ A modern React-based prototyping platform for Smartcat features, built with Type
 - [Project Structure](#project-structure)
 - [Development Workflow](#development-workflow)
 - [Available Scripts](#available-scripts)
+- [Authentication](#authentication)
+- [Deployment (GitHub Pages)](#-deployment-github-pages)
 - [Architecture](#architecture)
 - [Design System](#design-system)
 - [Feature Specifications](#feature-specifications)
@@ -69,7 +71,17 @@ This project provides a prototyping environment for Smartcat features, allowing 
 
 ### ✅ Implemented Features
 
-#### 1. Navigation System
+#### 1. Authentication System
+- Frontend password protection for client demos
+- Login page with username/password authentication
+- Protected routes that require authentication
+- Persistent authentication state (localStorage)
+- Automatic redirect to login for unauthenticated users
+
+**Routes:**
+- `/login` - Authentication page (redirects if already authenticated)
+
+#### 2. Navigation System
 - **Left Navigation Panel** (~72px width, icon-only)
   - Organization selector with popup
   - Primary navigation (Home, Hub, Chats)
@@ -79,11 +91,12 @@ This project provides a prototyping environment for Smartcat features, allowing 
   - Tour link
 
 **Routes:**
+- `/login` - Authentication page (redirects if already authenticated)
 - `/` - Home page
 - `/chats` - Chats page
 - `/chats/:chatId` - Individual chat conversation
 
-#### 2. Organization Management
+#### 3. Organization Management
 - Organization overview dashboard
 - Smartword balance tracking
 - Workspace management table
@@ -94,7 +107,7 @@ This project provides a prototyping environment for Smartcat features, allowing 
 **Routes:**
 - `/org/management` - Organization management page
 
-#### 3. Chats
+#### 4. Chats
 - Chat interface with conversation view
 - Chat sidebar with conversation list
 - Message input with feedback
@@ -173,6 +186,8 @@ smartcat-proto/
 │   │   │   └── ...
 │   │   ├── layout/                 # Layout components
 │   │   │   └── AppLayout.tsx
+│   │   ├── auth/                   # Authentication components
+│   │   │   └── ProtectedRoute.tsx
 │   │   ├── org-management/        # Org management components
 │   │   │   ├── WorkspacesTable.tsx
 │   │   │   ├── AllocationModal.tsx
@@ -184,8 +199,12 @@ smartcat-proto/
 │   │   └── ui/                     # shadcn/ui components
 │   │       └── popover.tsx
 │   │
+│   ├── contexts/                    # React contexts
+│   │   └── AuthContext.tsx         # Authentication context
+│   │
 │   ├── pages/                      # Page components
 │   │   ├── HomePage.tsx
+│   │   ├── LoginPage.tsx           # Authentication page
 │   │   ├── OrgManagementPage.tsx
 │   │   ├── OrgSettingsPage.tsx
 │   │   └── ChatsPage.tsx
@@ -212,10 +231,11 @@ smartcat-proto/
 │   ├── main.tsx                   # Entry point
 │   └── index.css                  # Global CSS imports
 │
+├── docs/                          # Production build (for GitHub Pages)
 ├── public/                        # Static assets
 ├── components.json                # shadcn/ui configuration
 ├── tailwind.config.js             # Tailwind configuration
-├── vite.config.ts                 # Vite configuration
+├── vite.config.ts                 # Vite configuration (configured for GitHub Pages)
 ├── tsconfig.json                  # TypeScript configuration
 └── package.json                   # Dependencies and scripts
 ```
@@ -282,7 +302,7 @@ Starts the Vite development server with hot module replacement.
 ```bash
 npm run build
 ```
-Builds the app for production. Outputs to `dist/` directory.
+Builds the app for production. Outputs to `docs/` directory (configured for GitHub Pages deployment).
 
 ### Preview
 
@@ -290,6 +310,81 @@ Builds the app for production. Outputs to `dist/` directory.
 npm run preview
 ```
 Preview the production build locally.
+
+---
+
+## 🔐 Authentication
+
+The prototype is protected with a simple frontend authentication system for client demos.
+
+### How It Works
+
+- All routes are protected and require authentication
+- Users are redirected to `/login` if not authenticated
+- Authentication state is persisted in localStorage (survives page refresh)
+- This is a **frontend-only** protection suitable for prototype demos (not secure against determined attackers)
+
+### Accessing the Prototype
+
+1. Navigate to the deployed prototype URL
+2. You'll be redirected to the login page
+3. Enter the credentials above
+4. After successful login, you'll have access to all prototype features
+
+---
+
+## 🚢 Deployment (GitHub Pages)
+
+The prototype is configured for deployment to GitHub Pages.
+
+### Prerequisites
+
+- GitHub repository (public or private)
+- GitHub Pages enabled in repository settings
+
+### Deployment Steps
+
+1. **Build the project**
+   ```bash
+   npm run build
+   ```
+   This creates a `docs/` folder with the production build.
+
+2. **Commit and push the `docs` folder**
+   ```bash
+   git add docs/
+   git commit -m "Deploy to GitHub Pages"
+   git push origin main
+   ```
+
+3. **Configure GitHub Pages**
+   - Go to your repository on GitHub
+   - Navigate to **Settings** → **Pages**
+   - Under **Build and deployment**:
+     - **Source**: Select "Deploy from a branch"
+     - **Branch**: Select `main`
+     - **Folder**: Select `/docs`
+   - Click **Save**
+
+4. **Access your prototype**
+   - Your site will be available at: `https://yourusername.github.io/smartcat-proto/`
+   - Replace `smartcat-proto` with your actual repository name if different
+   - Note: It may take a few minutes for the site to be available after first deployment
+
+### Important Notes
+
+- **Base Path**: The `vite.config.ts` is configured with `base: '/smartcat-proto/'`
+  - If your repository name is different, update the `base` path in `vite.config.ts` to match your repo name
+  - For example, if your repo is `my-prototype`, change it to `base: '/my-prototype/'`
+  - If deploying to a user/organization page (e.g., `username.github.io`), change it to `base: '/'`
+
+- **After each update**: Rebuild and push the `docs` folder to update the live site
+  ```bash
+  npm run build
+  git add docs/
+  git commit -m "Update deployment"
+  git push
+  ```
 
 ---
 
@@ -321,11 +416,11 @@ All routes are defined in `src/App.tsx` and wrapped with `AppLayout` for consist
 
 Currently using:
 - **React state** - Local component state
+- **React Context** - Authentication state (`AuthContext`)
 - **React Router** - URL state and navigation
 - **Mock data** - Static data in `src/mocks/`
 
 For future features, consider:
-- React Context for global state
 - TanStack Query for server state
 - Zustand or Redux for complex state management
 
