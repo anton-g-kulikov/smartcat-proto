@@ -1,3 +1,5 @@
+import * as Tooltip from '@radix-ui/react-tooltip'
+
 interface WorkspaceAllocation {
   id: string
   name: string
@@ -51,40 +53,80 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
   }
 
   return (
-    <div className="space-y-2">
-      {/* Progress Bar */}
-      <div className="relative h-2 bg-purple-100 rounded-full overflow-hidden">
-        {/* Remaining portion (dark purple) - leftmost */}
-        <div
-          className="absolute left-0 top-0 h-full rounded-full transition-all"
-          style={{ 
-            width: `${remainingPercentage}%`,
-            backgroundColor: 'var(--sc-primary)' // #6b4eff
-          }}
-        />
-        {/* Allocated portions (pink sections) - middle */}
-        {allocatedSections.map((section) => (
-          <div
-            key={section.id}
-            className="absolute top-0 h-full rounded-full transition-all"
-            style={{
-              left: `${section.left}%`,
-              width: `${section.width}%`,
-              backgroundColor: 'rgb(236, 72, 153)', // Pink color for allocations
-            }}
-            title={`${section.name}: ${formatNumber(section.allocated || 0)}`}
-          />
-        ))}
-        {/* Spent portion (light purple) - rightmost */}
-        {spent > 0 && (
-          <div
-            className="absolute left-0 top-0 h-full bg-purple-50 rounded-full"
-            style={{ 
-              width: `${spentPercentage}%`, 
-              left: `${remainingPercentage + allocatedPercentage}%` 
-            }}
-          />
-        )}
+    <Tooltip.Provider>
+      <div className="space-y-2">
+        {/* Progress Bar */}
+        <div className="relative h-2 bg-purple-100 rounded-full overflow-hidden">
+          {/* Remaining portion (dark purple) - leftmost */}
+          {remaining > 0 && (
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <div
+                  className="absolute left-0 top-0 h-full rounded-full transition-all cursor-pointer"
+                  style={{ 
+                    width: `${remainingPercentage}%`,
+                    backgroundColor: 'var(--sc-primary)' // #6b4eff
+                  }}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
+                  sideOffset={5}
+                >
+                  Remaining: {formatNumber(remaining)}
+                  <Tooltip.Arrow className="fill-gray-900" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          )}
+          {/* Allocated portions (pink sections) - middle */}
+          {allocatedSections.map((section) => (
+            <Tooltip.Root key={section.id}>
+              <Tooltip.Trigger asChild>
+                <div
+                  className="absolute top-0 h-full rounded-full transition-all cursor-pointer"
+                  style={{
+                    left: `${section.left}%`,
+                    width: `${section.width}%`,
+                    backgroundColor: 'rgb(236, 72, 153)', // Pink color for allocations
+                  }}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
+                  sideOffset={5}
+                >
+                  {section.name}: {formatNumber(section.allocated || 0)}
+                  <Tooltip.Arrow className="fill-gray-900" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          ))}
+          {/* Spent portion (light purple) - rightmost */}
+          {spent > 0 && (
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <div
+                  className="absolute left-0 top-0 h-full bg-purple-50 rounded-full cursor-pointer"
+                  style={{ 
+                    width: `${spentPercentage}%`, 
+                    left: `${remainingPercentage + allocatedPercentage}%` 
+                  }}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
+                  sideOffset={5}
+                >
+                  Spent: {formatNumber(spent)}
+                  <Tooltip.Arrow className="fill-gray-900" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          )}
         {/* Tick markers */}
         {tickMarkers.map((tick) => {
           const tickPosition = (tick / initialTotal) * 100
@@ -211,7 +253,8 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           )
         })}
       </div>
-    </div>
+      </div>
+    </Tooltip.Provider>
   )
 }
 
