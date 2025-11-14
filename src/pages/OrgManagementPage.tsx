@@ -18,17 +18,19 @@ export default function OrgManagementPage() {
     : workspaces.filter(ws => ws.isMyWorkspace)
 
   // Calculate available org balance (matching progress bar logic)
-  // Only count spent from workspaces with Share Smartwords ON (fullAccess: true) OR allocated is null
+  // Only count spent from workspaces WITHOUT allocated packages
+  // If a workspace has allocated packages, spent comes from allocation, not org balance (regardless of fullAccess)
   const orgLevelSpent = workspaces.reduce((sum, ws) => {
-    if (ws.fullAccess || ws.allocated === null) {
+    // Count as org-level spent only if: allocated is null (no allocated packages)
+    if (ws.allocated === null) {
       return sum + (ws.spent || 0)
     }
     return sum
   }, 0)
   
-  // Calculate total allocated
+  // Calculate total allocated - include ALL allocated packages regardless of fullAccess
   const totalAllocated = workspaces
-    .filter(ws => !ws.fullAccess && ws.allocated !== null && (ws.allocated || 0) > 0)
+    .filter(ws => ws.allocated !== null && (ws.allocated || 0) > 0)
     .reduce((sum, ws) => sum + (ws.allocated || 0), 0)
   
   // Available org balance = initialTotal - totalAllocated - orgLevelSpent
@@ -91,11 +93,16 @@ export default function OrgManagementPage() {
           }
         }
         
+        // Turn off fullAccess for the main workspace if it's on (since we're allocating a package)
+        const updatedWithFullAccess = prev.map(ws =>
+          ws.id === workspaceId && ws.fullAccess ? { ...ws, fullAccess: false } : ws
+        )
+        
         // Insert the new package row right after the workspace or after its existing packages
         return [
-          ...prev.slice(0, insertIndex),
+          ...updatedWithFullAccess.slice(0, insertIndex),
           newPackageRow,
-          ...prev.slice(insertIndex),
+          ...updatedWithFullAccess.slice(insertIndex),
         ]
       }
 
@@ -113,6 +120,8 @@ export default function OrgManagementPage() {
                   ? null // Set to null if fully reclaimed - this makes spent count as org-level consumption
                   : Math.max(0, (ws.allocated || 0) + delta),
               // spent remains unchanged - it tracks all consumption
+              // When allocating, turn off fullAccess (USE ORG SMARTWORDS)
+              fullAccess: mode === 'allocate' ? false : ws.fullAccess,
             }
           : ws
       )
