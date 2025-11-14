@@ -5,14 +5,12 @@ interface WorkspaceAllocation {
 }
 
 interface ProgressBarProps {
-  used: number
-  currentTotal: number // Current total after allocations/moves
   initialTotal: number // Initial subscription amount (for scale)
   allocations?: WorkspaceAllocation[] // Workspace allocations to display
   totalSpent?: number // Total spent from all workspaces
 }
 
-export function ProgressBar({ used, currentTotal, initialTotal, allocations = [], totalSpent = 0 }: ProgressBarProps) {
+export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: ProgressBarProps) {
   // Calculate total allocated across all workspaces
   const totalAllocated = allocations.reduce((sum, alloc) => sum + (alloc.allocated || 0), 0)
   // Spent amount (from workspaces) - this is what goes in the light purple section
@@ -125,7 +123,6 @@ export function ProgressBar({ used, currentTotal, initialTotal, allocations = []
         
         {/* Allocated sections labels */}
         {allocatedSections.map((section) => {
-          const labelLeft = section.left + (section.width / 2)
           // Only show label if section is wide enough (at least 5% of total)
           if (section.width < 5) return null
           

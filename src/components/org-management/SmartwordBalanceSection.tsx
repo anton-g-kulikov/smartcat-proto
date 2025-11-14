@@ -85,8 +85,6 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
           </button>
         </div>
         <ProgressBar 
-          used={org.smartwordsUsed} 
-          currentTotal={org.smartwordsTotal}
           initialTotal={org.initialSmartwordsTotal}
           allocations={allocations}
           totalSpent={totalSpent}
