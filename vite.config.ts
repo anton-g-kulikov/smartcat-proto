@@ -4,6 +4,10 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/smartcat-proto/',
+  build: {
+    outDir: 'docs',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
