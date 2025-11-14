@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage'
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/smartcat-proto">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
