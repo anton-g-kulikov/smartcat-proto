@@ -16,7 +16,7 @@ function RedirectHandler() {
 
   useEffect(() => {
     // Check if we have the query string format from 404.html redirect
-    // Format: /smartcat-proto/?/org/management
+    // Format: /?/org/management
     const search = location.search
     
     if (search.startsWith('?/')) {
@@ -43,7 +43,7 @@ function RedirectHandler() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/smartcat-proto">
+      <BrowserRouter>
         <RedirectHandler />
         <Routes>
           <Route path="/login" element={<LoginPage />} />

@@ -9,7 +9,7 @@ const version = packageJson.version
 
 export default defineConfig({
   plugins: [react()],
-  base: '/smartcat-proto/',
+  base: '/',
   build: {
     outDir: 'docs',
   },
