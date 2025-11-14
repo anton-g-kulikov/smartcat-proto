@@ -1,10 +1,14 @@
 {
   "name": "smartcat-proto",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "bump-version": "node scripts/bump-version.js",
+    "bump-version:patch": "node scripts/bump-version.js patch",
+    "bump-version:minor": "node scripts/bump-version.js minor",
+    "bump-version:major": "node scripts/bump-version.js major",
+    "build": "npm run bump-version && tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
