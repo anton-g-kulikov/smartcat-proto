@@ -16,15 +16,26 @@ function RedirectHandler() {
 
   useEffect(() => {
     // Check if we have the query string format from 404.html redirect
-    const queryParams = new URLSearchParams(location.search)
-    const path = queryParams.get('/')
+    // Format: /smartcat-proto/?/org/management
+    const search = location.search
     
-    if (path) {
-      // Convert the path back from the query string format
-      const decodedPath = path.replace(/~and~/g, '&')
-      navigate(decodedPath + location.hash, { replace: true })
+    if (search.startsWith('?/')) {
+      // Extract the path from ?/path format
+      const path = search.slice(2) // Remove '?/'
+      // Handle additional query params (if any) - they would be after & or #
+      const pathParts = path.split('&')
+      const actualPath = pathParts[0].split('#')[0]
+      
+      // Decode the path (replace ~and~ with &)
+      const decodedPath = actualPath.replace(/~and~/g, '&')
+      
+      // Ensure path starts with /
+      const finalPath = decodedPath.startsWith('/') ? decodedPath : '/' + decodedPath
+      
+      // Navigate to the correct path
+      navigate(finalPath + (location.hash || ''), { replace: true })
     }
-  }, [location, navigate])
+  }, [location.search, location.hash, navigate])
 
   return null
 }
