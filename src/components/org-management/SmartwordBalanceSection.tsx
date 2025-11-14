@@ -76,7 +76,7 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
     <>
       <section className="rounded-2xl bg-[var(--sc-surface)] shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-[var(--sc-text)]">Smartword Org-level Package</h3>
+          <h3 className="text-lg font-semibold text-[var(--sc-text)]">Org-level Smartwords Balance</h3>
           <button
             onClick={() => setIsModalOpen(true)}
             className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
