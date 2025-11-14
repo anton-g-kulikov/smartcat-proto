@@ -26,10 +26,10 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
   }
 
   // Prepare allocations data for progress bar
-  // Only show allocations for workspaces with Share Smartwords OFF (fullAccess: false) AND allocated is set
+  // Show ALL allocated packages regardless of fullAccess status
   // Group multiple packages for the same workspace together
   const allocationsMap = workspaces
-    .filter(ws => !ws.fullAccess && ws.allocated !== null && (ws.allocated || 0) > 0)
+    .filter(ws => ws.allocated !== null && (ws.allocated || 0) > 0)
     .reduce((acc, ws) => {
       const existing = acc.get(ws.name)
       if (existing) {
@@ -53,19 +53,20 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
   const allocations = Array.from(allocationsMap.values())
   
   // Calculate total spent from org-level balance
-  // Only count spent from workspaces with Share Smartwords ON (fullAccess: true) OR allocated is null
-  // If Share Smartwords is OFF and allocated is set, spent comes from allocation, not org balance
+  // Only count spent from workspaces WITHOUT allocated packages
+  // If a workspace has allocated packages, spent comes from allocation, not org balance (regardless of fullAccess)
   const totalSpent = workspaces.reduce((sum, ws) => {
-    // Count as org-level spent if: Share Smartwords ON OR allocated is null
-    if (ws.fullAccess || ws.allocated === null) {
+    // Count as org-level spent only if: allocated is null (no allocated packages)
+    // If allocated is set, spent comes from allocation, not org balance
+    if (ws.allocated === null) {
       return sum + (ws.spent || 0)
     }
     return sum
   }, 0)
   
-  // Calculate total allocated
+  // Calculate total allocated - include ALL allocated packages regardless of fullAccess
   const totalAllocated = workspaces
-    .filter(ws => !ws.fullAccess && ws.allocated !== null && (ws.allocated || 0) > 0)
+    .filter(ws => ws.allocated !== null && (ws.allocated || 0) > 0)
     .reduce((sum, ws) => sum + (ws.allocated || 0), 0)
   
   // Calculate available org balance (matching progress bar logic)
@@ -76,7 +77,7 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
     <>
       <section className="rounded-2xl bg-[var(--sc-surface)] shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-[var(--sc-text)]">Org-level Smartwords Balance</h3>
+          <h3 className="text-lg font-semibold text-[var(--sc-text)]">Org-level Smartwords Package</h3>
           <button
             onClick={() => setIsModalOpen(true)}
             className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
