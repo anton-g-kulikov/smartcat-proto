@@ -55,6 +55,7 @@ export function AllocationModal({
   } = useForm<{ amount: number }>({
     resolver: zodResolver(schema),
     defaultValues: { amount: defaultAmount },
+    mode: 'onChange', // Validate on change
   })
   
   // Update form value when modal opens in reclaim mode
@@ -128,7 +129,7 @@ export function AllocationModal({
               <div className="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">
-                    {mode === 'reclaim' ? 'Allocated package:' : 'Current workspace balance:'}
+                    {mode === 'reclaim' ? 'Allocated package:' : 'Current workspace allocation:'}
                   </span>
                   <span className="font-medium">
                     {currentWorkspaceBalance === null
@@ -148,12 +149,6 @@ export function AllocationModal({
                     <span className="font-medium">{formatNumber(maxAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-gray-600">
-                    Current organization balance:
-                  </span>
-                  <span className="font-medium">{formatNumber(currentOrgBalance)}</span>
-                </div>
               </div>
             </div>
 
@@ -172,7 +167,22 @@ export function AllocationModal({
                 </button>
                 <input
                   type="number"
-                  {...register('amount', { valueAsNumber: true })}
+                  {...register('amount', { 
+                    valueAsNumber: true,
+                  })}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    // Handle empty input
+                    if (value === '') {
+                      setValue('amount', 0, { shouldValidate: true })
+                      return
+                    }
+                    // Convert to number and validate
+                    const numValue = Number(value)
+                    if (!isNaN(numValue)) {
+                      setValue('amount', numValue, { shouldValidate: true })
+                    }
+                  }}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sc-primary)]"
                   min={0}
                   max={maxAmount}
@@ -192,9 +202,9 @@ export function AllocationModal({
             </div>
 
             <div className="bg-blue-50 rounded-lg p-3 space-y-2 text-sm">
-              <div className="font-medium text-blue-900">Projected balances:</div>
+              <div className="font-medium text-blue-900 mb-2">Result</div>
               <div className="flex justify-between text-blue-700">
-                <span>Workspace balance:</span>
+                <span>Workspace allocation:</span>
                 <span className="font-medium">
                   {projectedWorkspaceBalance < 0
                     ? '0'

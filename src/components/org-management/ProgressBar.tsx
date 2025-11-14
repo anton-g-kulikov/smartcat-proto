@@ -53,7 +53,7 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
   }
 
   return (
-    <Tooltip.Provider delayDuration={300}>
+    <Tooltip.Provider>
       <div className="space-y-2">
         {/* Progress Bar */}
         <div className="relative h-2 bg-purple-100 rounded-full overflow-hidden">
@@ -61,20 +61,17 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           {remaining > 0 && (
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className="absolute left-0 top-0 h-full rounded-full transition-all cursor-pointer border-0 p-0"
+                <div
+                  className="absolute left-0 top-0 h-full rounded-full transition-all cursor-pointer"
                   style={{ 
                     width: `${remainingPercentage}%`,
-                    backgroundColor: 'var(--sc-primary)', // #6b4eff
-                    zIndex: 10,
+                    backgroundColor: 'var(--sc-primary)' // #6b4eff
                   }}
-                  aria-label={`Remaining: ${formatNumber(remaining)}`}
                 />
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Content
-                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-[100]"
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
                   sideOffset={5}
                 >
                   Remaining: {formatNumber(remaining)}
@@ -87,21 +84,18 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           {allocatedSections.map((section) => (
             <Tooltip.Root key={section.id}>
               <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className="absolute top-0 h-full rounded-full transition-all cursor-pointer border-0 p-0"
+                <div
+                  className="absolute top-0 h-full rounded-full transition-all cursor-pointer"
                   style={{
                     left: `${section.left}%`,
                     width: `${section.width}%`,
                     backgroundColor: 'rgb(236, 72, 153)', // Pink color for allocations
-                    zIndex: 10,
                   }}
-                  aria-label={`${section.name}: ${formatNumber(section.allocated || 0)}`}
                 />
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Content
-                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-[100]"
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
                   sideOffset={5}
                 >
                   {section.name}: {formatNumber(section.allocated || 0)}
@@ -114,20 +108,17 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           {spent > 0 && (
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
-                <button
-                  type="button"
-                  className="absolute left-0 top-0 h-full bg-purple-50 rounded-full cursor-pointer border-0 p-0"
+                <div
+                  className="absolute left-0 top-0 h-full bg-purple-50 rounded-full cursor-pointer"
                   style={{ 
                     width: `${spentPercentage}%`, 
-                    left: `${remainingPercentage + allocatedPercentage}%`,
-                    zIndex: 10,
+                    left: `${remainingPercentage + allocatedPercentage}%` 
                   }}
-                  aria-label={`Spent: ${formatNumber(spent)}`}
                 />
               </Tooltip.Trigger>
               <Tooltip.Portal>
                 <Tooltip.Content
-                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-[100]"
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
                   sideOffset={5}
                 >
                   Spent: {formatNumber(spent)}
@@ -142,11 +133,10 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           return (
             <div
               key={tick}
-              className="absolute top-0 w-px h-full pointer-events-none"
+              className="absolute top-0 w-px h-full"
               style={{ 
                 left: `${tickPosition}%`,
-                backgroundColor: 'rgba(107, 78, 255, 0.4)', // Primary color with opacity
-                zIndex: 1,
+                backgroundColor: 'rgba(107, 78, 255, 0.4)' // Primary color with opacity
               }}
             />
           )
