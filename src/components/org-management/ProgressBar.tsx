@@ -26,24 +26,9 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
   const allocatedPercentage = (totalAllocated / initialTotal) * 100
   const spentPercentage = (spent / initialTotal) * 100
   
-  // Calculate positions for allocated sections
+  // Calculate position for single combined allocated section
   // Order: remaining (purple) -> allocated (pink) -> spent (light purple)
-  const allocatedSections = allocations
-    .filter(alloc => (alloc.allocated || 0) > 0)
-    .map((alloc, index) => {
-      const prevAllocated = allocations
-        .slice(0, index)
-        .reduce((sum, a) => sum + (a.allocated || 0), 0)
-      const sectionStart = remaining + prevAllocated
-      const sectionPercentage = ((alloc.allocated || 0) / initialTotal) * 100
-      const sectionLeft = (sectionStart / initialTotal) * 100
-      
-      return {
-        ...alloc,
-        left: sectionLeft,
-        width: sectionPercentage,
-      }
-    })
+  const allocatedLeft = (remaining / initialTotal) * 100
   
   // Only show 0 and initialTotal as tick markers
   const tickMarkers = [0, initialTotal]
@@ -80,15 +65,15 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
               </Tooltip.Portal>
             </Tooltip.Root>
           )}
-          {/* Allocated portions (pink sections) - middle */}
-          {allocatedSections.map((section) => (
-            <Tooltip.Root key={section.id}>
+          {/* Allocated portion (pink section) - middle, combined */}
+          {totalAllocated > 0 && (
+            <Tooltip.Root>
               <Tooltip.Trigger asChild>
                 <div
                   className="absolute top-0 h-full rounded-full transition-all cursor-pointer"
                   style={{
-                    left: `${section.left}%`,
-                    width: `${section.width}%`,
+                    left: `${allocatedLeft}%`,
+                    width: `${allocatedPercentage}%`,
                     backgroundColor: 'rgb(236, 72, 153)', // Pink color for allocations
                   }}
                 />
@@ -98,12 +83,12 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
                   className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
                   sideOffset={5}
                 >
-                  {section.name}: {formatNumber(section.allocated || 0)}
+                  Allocated: {formatNumber(totalAllocated)}
                   <Tooltip.Arrow className="fill-gray-900" />
                 </Tooltip.Content>
               </Tooltip.Portal>
             </Tooltip.Root>
-          ))}
+          )}
           {/* Spent portion (light purple) - rightmost */}
           {spent > 0 && (
             <Tooltip.Root>
@@ -145,7 +130,7 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
       
       {/* Section labels with amounts */}
       <div className="relative h-4 mt-1 overflow-visible">
-        {/* Remaining section label (dark purple) - just the number */}
+        {/* Remaining section label (dark purple) */}
         {remaining > 0 && remainingPercentage > 5 && (
           <div
             className="absolute text-xs font-medium pointer-events-none"
@@ -159,55 +144,38 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
               textOverflow: 'ellipsis',
             }}
           >
-            {formatNumber(remaining)}
+            Remaining: {formatNumber(remaining)}
           </div>
         )}
         
-        {/* Allocated sections labels */}
-        {allocatedSections.map((section) => {
-          // Only show label if section is wide enough (at least 5% of total)
-          if (section.width < 5) return null
-          
-          // Always show the number, workspace name is optional
-          const numberText = formatNumber(section.allocated)
-          const fullLabel = `${section.name}: ${numberText}`
-          
-          // Estimate if we have enough space for the full label
-          // If section is narrow (< 10%), show only the number
-          // Otherwise, try to show the full label
-          const showFullLabel = section.width >= 10
-          const displayText = showFullLabel ? fullLabel : numberText
-          
-          return (
+        {/* Allocated section label - combined */}
+        {totalAllocated > 0 && allocatedPercentage > 5 && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: `${allocatedLeft}%`,
+              width: `${allocatedPercentage}%`,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+            }}
+          >
             <div
-              key={section.id}
-              className="absolute pointer-events-none"
+              className="text-xs font-medium"
               style={{
-                left: `${section.left}%`,
-                width: `${section.width}%`,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                color: 'rgb(236, 72, 153)',
+                whiteSpace: 'nowrap',
                 overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                padding: '0 2px',
               }}
             >
-              <div
-                className="text-xs font-medium"
-                style={{
-                  color: 'rgb(236, 72, 153)',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                  padding: '0 2px',
-                }}
-                title={fullLabel} // Show full text on hover
-              >
-                {displayText}
-              </div>
+              Allocated: {formatNumber(totalAllocated)}
             </div>
-          )
-        })}
+          </div>
+        )}
         
         {/* Spent section label (light purple) - matching section color */}
         {spent > 0 && spentPercentage > 5 && (
@@ -223,7 +191,7 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
               textOverflow: 'ellipsis',
             }}
           >
-            {formatNumber(spent)}
+            Spent: {formatNumber(spent)}
           </div>
         )}
       </div>
