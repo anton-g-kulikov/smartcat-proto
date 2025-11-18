@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { mockWorkspaces, mockWorkspaceOperations, mockOrgSummary } from '@/mocks/orgManagement'
-import { Info, FileText, Calendar, ArrowUp, Circle } from 'lucide-react'
+import { FileText, Calendar, ArrowUp, Circle } from 'lucide-react'
 import { StatisticsWidget } from '@/components/smartwords/StatisticsWidget'
 import { StatCard } from '@/components/org-management/StatCard'
 import {
@@ -13,7 +13,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import type { SmartwordsOperation } from '@/types/smartwords'
 import type { WorkspaceRow } from '@/types/orgManagement'
 
 const ITEMS_PER_PAGE = 10
@@ -36,8 +35,9 @@ const calculateWorkspaceTotals = (workspaceId: string, workspaces: WorkspaceRow[
   let totalRemaining = 0
 
   workspacePackages.forEach(ws => {
-    const remaining = Math.max(0, ws.allocated - (ws.spent || 0))
-    totalAllocated += ws.allocated
+    const allocated = ws.allocated || 0
+    const remaining = Math.max(0, allocated - (ws.spent || 0))
+    totalAllocated += allocated
     totalSpent += ws.spent || 0
     totalRemaining += remaining
   })
@@ -56,17 +56,11 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const formatLanguages = (languages?: string[]) => {
-  if (!languages || languages.length === 0) return '-'
-  if (languages.length <= 2) return languages.join(', ')
-  return `${languages.slice(0, 2).join(', ')} +${languages.length - 2}`
-}
-
 export default function SmartwordsUsageReportPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>()
   
   // Calculate totals for the specified workspace
-  const { totalAllocated, totalSpent, totalRemaining, workspace } = calculateWorkspaceTotals(
+  const { totalAllocated, totalRemaining, workspace } = calculateWorkspaceTotals(
     workspaceId || '',
     mockWorkspaces
   )
@@ -82,7 +76,6 @@ export default function SmartwordsUsageReportPage() {
   }
 
   const currentPlan = workspace.subscription || 'Forever Free'
-  const workspaceName = workspace.name
   
   // Get workspace-specific operations (safely handle missing data)
   const workspaceOperations = (workspaceId && mockWorkspaceOperations[workspaceId]) ? mockWorkspaceOperations[workspaceId] : []
