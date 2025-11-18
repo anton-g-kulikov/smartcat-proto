@@ -1,21 +1,15 @@
 import { useState } from 'react'
 import { mockOrgSummary, mockWorkspaces, mockOrganizations } from '@/mocks/orgManagement'
-import type { WorkspaceTab, OrgSummary, WorkspaceRow } from '@/types/orgManagement'
-import { PageHeader } from '@/components/org-management/PageHeader'
+import type { OrgSummary, WorkspaceRow } from '@/types/orgManagement'
 import { OrgHeaderSection } from '@/components/org-management/OrgHeaderSection'
 import { StatsCardsRow } from '@/components/org-management/StatsCardsRow'
 import { SmartwordBalanceSection } from '@/components/org-management/SmartwordBalanceSection'
 import { WorkspacesSection } from '@/components/org-management/WorkspacesSection'
 
 export default function OrgManagementPage() {
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('all')
   const [org, setOrg] = useState<OrgSummary>(mockOrgSummary)
   const [workspaces, setWorkspaces] = useState<WorkspaceRow[]>(mockWorkspaces)
   const [organizations, setOrganizations] = useState(mockOrganizations)
-
-  const filteredWorkspaces = activeTab === 'all' 
-    ? workspaces 
-    : workspaces.filter(ws => ws.isMyWorkspace)
 
   // Calculate available org balance (matching progress bar logic)
   // Only count spent from workspaces WITHOUT allocated packages
@@ -200,7 +194,6 @@ export default function OrgManagementPage() {
 
   return (
     <div className="min-h-full p-8 space-y-6">
-      <PageHeader />
       <OrgHeaderSection org={org} />
       <StatsCardsRow 
         org={org}
@@ -217,11 +210,7 @@ export default function OrgManagementPage() {
         onMoveSmartwords={handleMoveSmartwords}
       />
       <WorkspacesSection 
-        workspaces={filteredWorkspaces}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        allCount={workspaces.length}
-        myCount={workspaces.filter(ws => ws.isMyWorkspace).length}
+        workspaces={workspaces}
         onToggleFullAccess={handleToggleFullAccess}
         onToggleSubscriptionAccess={handleToggleSubscriptionAccess}
         onAllocate={handleWorkspaceAllocation}
