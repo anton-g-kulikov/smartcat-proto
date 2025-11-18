@@ -39,6 +39,8 @@ export type WorkspaceRow = {
   spent: number
   isMyWorkspace?: boolean
   isPackageRow?: boolean // If true, only show package columns (allocated, used, current package)
+  packageLabel?: string // Optional label for the package (e.g., "WS")
+  isNonReclaimable?: boolean // If true, admin cannot reclaim this package
 }
 
 export type WorkspaceTab = 'all' | 'my'
