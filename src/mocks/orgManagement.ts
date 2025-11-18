@@ -1,4 +1,5 @@
 import type { OrgSummary, WorkspaceRow } from '@/types/orgManagement'
+import type { SmartwordsOperation } from '@/types/smartwords'
 
 export const mockOrgSummary: OrgSummary = {
   id: '1',
@@ -6,10 +7,10 @@ export const mockOrgSummary: OrgSummary = {
   logoUrl: undefined, // Use avatar fallback
   avatarColor: '#dc2626', // Red (matching mockup)
   initial: 'C',
-  renewalDate: '2025-05-10T00:00:00Z',
+  renewalDate: '2026-05-10T00:00:00Z',
   subscription: 'Enterprise',
   initialSmartwordsTotal: 5000000, // Original subscription amount (fixed)
-  smartwordsTotal: 1150000, // Current total (2M - 500K HR - 250K Marketing Team - 100K HR second)
+  smartwordsTotal: 650000, // Current total (2M - 500K HR - 250K Marketing Team - 100K HR second - 300K Product Team - 200K Product Team WS)
   smartwordsUsed: 1000000, // Total used (includes all workspaces with org-level access)
   workspacesCount: 10,
   organizationAdmins: [
@@ -77,7 +78,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
   {
     id: 'ws3',
     name: 'HR',
-    subscription: 'Forever Free',
+    subscription: 'Enterprise', // Shared by the org
     admins: [
       {
         id: 'es1',
@@ -86,7 +87,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
         avatarColor: '#ec4899',
       },
     ],
-    subscriptionAccess: true, // Toggle ON (default)
+    subscriptionAccess: true, // Toggle ON (default) - using org subscription
     fullAccess: false, // Toggle OFF
     allocated: 500000, // 500K allocated by default
     spent: 187654, // Used from allocated balance (not from org-level)
@@ -95,7 +96,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
   {
     id: 'ws3-2',
     name: 'HR',
-    subscription: 'Forever Free',
+    subscription: 'Enterprise', // Shared by the org
     admins: [
       {
         id: 'es1',
@@ -104,7 +105,7 @@ export const mockWorkspaces: WorkspaceRow[] = [
         avatarColor: '#ec4899',
       },
     ],
-    subscriptionAccess: true, // Toggle ON (default)
+    subscriptionAccess: true, // Toggle ON (default) - using org subscription
     fullAccess: false, // Toggle OFF
     allocated: 100000, // 100K allocated - second package
     spent: 0, // No usage yet
@@ -172,10 +173,37 @@ export const mockWorkspaces: WorkspaceRow[] = [
       },
     ],
     subscriptionAccess: true,
-    fullAccess: true, // Access to org Smartwords
-    allocated: null,
-    spent: 123456,
+    fullAccess: false, // Turn off org Smartwords access since we're allocating a package
+    allocated: 300000, // 300K allocated package
+    spent: 0,
     isMyWorkspace: false,
+  },
+  {
+    id: 'ws6-2',
+    name: 'Product Team',
+    subscription: 'Enterprise',
+    admins: [
+      {
+        id: 'sl1',
+        name: 'Sarah Lee',
+        initial: 'SL',
+        avatarColor: '#8b5cf6',
+      },
+      {
+        id: 'rm1',
+        name: 'Robert Miller',
+        initial: 'RM',
+        avatarColor: '#ef4444',
+      },
+    ],
+    subscriptionAccess: true,
+    fullAccess: false,
+    allocated: 200000, // 200K allocated - second package with "WS" label
+    spent: 0,
+    isMyWorkspace: false,
+    isPackageRow: true,
+    packageLabel: 'WS',
+    isNonReclaimable: true, // Cannot be reclaimed
   },
   {
     id: 'ws7',
@@ -301,4 +329,263 @@ export const mockOrganizations = [
     currentBalance: 2500000,
   },
 ]
+
+// Mock smartwords operations by workspace ID
+export const mockWorkspaceOperations: Record<string, SmartwordsOperation[]> = {
+  // HR workspace operations
+  ws3: [
+  {
+    id: 'hr-op-alloc-500k',
+    timestamp: '2024-12-01T09:00:00Z',
+    type: 'allocation',
+    amount: 500000,
+    description: 'Smartwords allocated to workspace',
+  },
+  {
+    id: 'op1',
+    timestamp: '2025-01-15T14:30:00Z',
+    type: 'translation',
+    projectName: 'Employee Handbook 2025',
+    projectId: 'proj1',
+    amount: 45230,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German'],
+    fileType: 'PDF',
+    wordCount: 12500,
+  },
+  {
+    id: 'op2',
+    timestamp: '2025-01-14T10:15:00Z',
+    type: 'translation',
+    projectName: 'Benefits Package Documentation',
+    projectId: 'proj2',
+    amount: 32150,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'Portuguese'],
+    fileType: 'DOCX',
+    wordCount: 8900,
+  },
+  {
+    id: 'op3',
+    timestamp: '2025-01-13T16:45:00Z',
+    type: 'translation',
+    projectName: 'Onboarding Materials',
+    projectId: 'proj3',
+    amount: 28760,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['French', 'Italian', 'Spanish'],
+    fileType: 'PPTX',
+    wordCount: 7200,
+  },
+  {
+    id: 'op4',
+    timestamp: '2025-01-12T09:20:00Z',
+    type: 'translation',
+    projectName: 'HR Policy Updates',
+    projectId: 'proj4',
+    amount: 19540,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['German', 'French'],
+    fileType: 'PDF',
+    wordCount: 5400,
+  },
+  {
+    id: 'op5',
+    timestamp: '2025-01-11T13:10:00Z',
+    type: 'translation',
+    projectName: 'Training Materials - Q1',
+    projectId: 'proj5',
+    amount: 28974,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Italian'],
+    fileType: 'DOCX',
+    wordCount: 8050,
+  },
+  {
+    id: 'op6',
+    timestamp: '2025-01-10T11:30:00Z',
+    type: 'translation',
+    projectName: 'Compliance Documentation',
+    projectId: 'proj6',
+    amount: 33000,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Portuguese'],
+    fileType: 'PDF',
+    wordCount: 9200,
+  },
+  {
+    id: 'op7',
+    timestamp: '2025-01-09T08:15:00Z',
+    type: 'translation',
+    projectName: 'Employee Benefits Guide',
+    projectId: 'proj7',
+    amount: 41200,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Italian'],
+    fileType: 'PDF',
+    wordCount: 11500,
+  },
+  {
+    id: 'op8',
+    timestamp: '2025-01-08T14:20:00Z',
+    type: 'translation',
+    projectName: 'Safety Protocol Manual',
+    projectId: 'proj8',
+    amount: 28900,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German'],
+    fileType: 'DOCX',
+    wordCount: 8050,
+  },
+  {
+    id: 'op9',
+    timestamp: '2025-01-07T10:45:00Z',
+    type: 'translation',
+    projectName: 'Code of Conduct',
+    projectId: 'proj9',
+    amount: 35600,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Portuguese', 'Italian'],
+    fileType: 'PDF',
+    wordCount: 9900,
+  },
+  {
+    id: 'op10',
+    timestamp: '2025-01-06T16:30:00Z',
+    type: 'translation',
+    projectName: 'Performance Review Template',
+    projectId: 'proj10',
+    amount: 22300,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French'],
+    fileType: 'DOCX',
+    wordCount: 6200,
+  },
+  {
+    id: 'op11',
+    timestamp: '2025-01-05T09:00:00Z',
+    type: 'translation',
+    projectName: 'Recruitment Process Guide',
+    projectId: 'proj11',
+    amount: 31800,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Italian'],
+    fileType: 'PDF',
+    wordCount: 8850,
+  },
+  {
+    id: 'op12',
+    timestamp: '2025-01-04T13:15:00Z',
+    type: 'translation',
+    projectName: 'Leave Policy Documentation',
+    projectId: 'proj12',
+    amount: 27100,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German'],
+    fileType: 'DOCX',
+    wordCount: 7550,
+  },
+  {
+    id: 'op13',
+    timestamp: '2025-01-03T11:20:00Z',
+    type: 'translation',
+    projectName: 'Diversity & Inclusion Handbook',
+    projectId: 'proj13',
+    amount: 39400,
+    description: 'Automated translation task',
+    sourceLanguage: 'English',
+    targetLanguages: ['Spanish', 'French', 'German', 'Portuguese'],
+    fileType: 'PDF',
+    wordCount: 10950,
+  },
+  {
+    id: 'hr-op-alloc-100k',
+    timestamp: '2025-01-16T12:00:00Z',
+    type: 'allocation',
+    amount: 100000,
+    description: 'Smartwords allocated to workspace',
+  },
+  ],
+  // Marketing Team workspace operations
+  ws2: [
+    {
+      id: 'mt-op-alloc',
+      timestamp: '2025-01-16T10:00:00Z',
+      type: 'allocation',
+      amount: 250000,
+      description: 'Smartwords allocated to workspace',
+    },
+    {
+      id: 'mt-op1',
+      timestamp: '2024-12-15T14:20:00Z',
+      type: 'translation',
+      projectName: 'Q4 Campaign Materials',
+      projectId: 'mt-proj1',
+      amount: 125000,
+      description: 'Automated translation task',
+      sourceLanguage: 'English',
+      targetLanguages: ['Spanish', 'French', 'German', 'Italian', 'Portuguese'],
+      fileType: 'PDF',
+      wordCount: 35000,
+    },
+    {
+      id: 'mt-op2',
+      timestamp: '2024-11-20T09:30:00Z',
+      type: 'translation',
+      projectName: 'Product Launch Press Release',
+      projectId: 'mt-proj2',
+      amount: 87500,
+      description: 'Automated translation task',
+      sourceLanguage: 'English',
+      targetLanguages: ['Spanish', 'French', 'German'],
+      fileType: 'DOCX',
+      wordCount: 24500,
+    },
+    {
+      id: 'mt-op3',
+      timestamp: '2024-10-10T16:45:00Z',
+      type: 'translation',
+      projectName: 'Social Media Content Bundle',
+      projectId: 'mt-proj3',
+      amount: 37500,
+      description: 'Automated translation task',
+      sourceLanguage: 'English',
+      targetLanguages: ['Spanish', 'French'],
+      fileType: 'DOCX',
+      wordCount: 10500,
+    },
+  ],
+  // Product Team workspace operations
+  ws6: [
+    {
+      id: 'pt-op-alloc-300k',
+      timestamp: '2025-01-10T09:00:00Z',
+      type: 'allocation',
+      amount: 300000,
+      description: 'Smartwords allocated to workspace',
+    },
+    {
+      id: 'pt-op-alloc-200k',
+      timestamp: '2025-01-12T14:00:00Z',
+      type: 'allocation',
+      amount: 200000,
+      description: 'Smartwords purchased by workspace',
+    },
+  ],
+}
+
+// Legacy export for backward compatibility
+export const mockHRSmartwordsOperations = mockWorkspaceOperations.ws3 || []
 
