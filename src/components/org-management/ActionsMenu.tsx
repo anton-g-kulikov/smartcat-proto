@@ -1,12 +1,10 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { MoreVertical, RefreshCw, Settings, Eye, Users, FileText, ArrowUp, ArrowDown } from 'lucide-react'
+import { MoreVertical, Settings, Users, FileText, ArrowUp, ArrowDown } from 'lucide-react'
 
 interface ActionsMenuProps {
   workspaceId: string
-  onViewDetails?: () => void
   onManageAdmins?: () => void
   onUsageReport?: () => void
-  onRefresh?: () => void
   onSettings?: () => void
   onAllocate?: () => void
   onReclaim?: () => void
@@ -14,10 +12,8 @@ interface ActionsMenuProps {
 
 export function ActionsMenu({
   workspaceId: _workspaceId,
-  onViewDetails,
   onManageAdmins,
   onUsageReport,
-  onRefresh,
   onSettings,
   onAllocate,
   onReclaim,
@@ -37,24 +33,7 @@ export function ActionsMenu({
           className="bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[180px] z-50"
           sideOffset={5}
         >
-          {onViewDetails && (
-            <DropdownMenu.Item
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-              onSelect={onViewDetails}
-            >
-              <Eye className="w-4 h-4" />
-              View details
-            </DropdownMenu.Item>
-          )}
-          {onManageAdmins && (
-            <DropdownMenu.Item
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-              onSelect={onManageAdmins}
-            >
-              <Users className="w-4 h-4" />
-              Manage admins
-            </DropdownMenu.Item>
-          )}
+          {/* Group 1: Smartwords operations and Usage report */}
           {onUsageReport && (
             <DropdownMenu.Item
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
@@ -64,7 +43,6 @@ export function ActionsMenu({
               Usage report
             </DropdownMenu.Item>
           )}
-          <DropdownMenu.Separator className="h-px bg-gray-200 my-1" />
           {onAllocate && (
             <DropdownMenu.Item
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
@@ -84,13 +62,14 @@ export function ActionsMenu({
             </DropdownMenu.Item>
           )}
           <DropdownMenu.Separator className="h-px bg-gray-200 my-1" />
-          {onRefresh && (
+          {/* Group 2: Manage admins and Settings */}
+          {onManageAdmins && (
             <DropdownMenu.Item
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-              onSelect={onRefresh}
+              onSelect={onManageAdmins}
             >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
+              <Users className="w-4 h-4" />
+              Manage admins
             </DropdownMenu.Item>
           )}
           {onSettings && (

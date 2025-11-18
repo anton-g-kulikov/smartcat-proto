@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   useReactTable,
   getCoreRowModel,
@@ -24,6 +25,7 @@ interface WorkspacesTableProps {
 const columnHelper = createColumnHelper<WorkspaceRow>()
 
 export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscriptionAccess, onAllocate, currentOrgBalance }: WorkspacesTableProps) {
+  const navigate = useNavigate()
   const [allocationModal, setAllocationModal] = useState<{
     open: boolean
     workspace: WorkspaceRow | null
@@ -179,10 +181,19 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
         ),
         cell: (info) => {
           const value = info.getValue()
+          const workspace = info.row.original
+          const label = workspace.packageLabel
           return (
-            <span className="text-sm text-gray-700">
-              {value === null ? 'Not set' : formatNumber(value)}
-            </span>
+            <div className="flex items-center gap-2">
+              {label && (
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                  {label}
+                </span>
+              )}
+              <span className="text-sm text-gray-700">
+                {value === null ? 'Not set' : formatNumber(value)}
+              </span>
+            </div>
           )
         },
       }),
@@ -238,7 +249,7 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
                 onAllocate={() =>
                   setAllocationModal({ open: true, workspace, mode: 'allocate' })
                 }
-                onReclaim={() =>
+                onReclaim={workspace.isNonReclaimable ? undefined : () =>
                   setAllocationModal({ open: true, workspace, mode: 'reclaim' })
                 }
               />
@@ -247,15 +258,13 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
           return (
             <ActionsMenu
               workspaceId={workspace.id}
-              onViewDetails={() => console.log('View details', workspace.id)}
               onManageAdmins={() => console.log('Manage admins', workspace.id)}
-              onUsageReport={() => console.log('Usage report', workspace.id)}
-              onRefresh={() => console.log('Refresh', workspace.id)}
+              onUsageReport={() => navigate(`/smartwords-usage-report/${workspace.id}`)}
               onSettings={() => console.log('Settings', workspace.id)}
               onAllocate={() =>
                 setAllocationModal({ open: true, workspace, mode: 'allocate' })
               }
-              onReclaim={() =>
+              onReclaim={workspace.isNonReclaimable ? undefined : () =>
                 setAllocationModal({ open: true, workspace, mode: 'reclaim' })
               }
             />
@@ -263,7 +272,7 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
         },
       }),
     ],
-    [onToggleFullAccess, onToggleSubscriptionAccess, onAllocate]
+    [onToggleFullAccess, onToggleSubscriptionAccess, onAllocate, navigate]
   )
 
   const table = useReactTable({

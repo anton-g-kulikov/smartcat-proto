@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
 import { z } from 'zod'
 import { X, Plus, Minus } from 'lucide-react'
-import { toast } from '@/components/ui/sonner'
 
 interface AllocationModalProps {
   open: boolean
@@ -93,20 +92,8 @@ export function AllocationModal({
   }
 
   const onSubmit = (data: { amount: number }) => {
-    if (mode === 'reclaim') {
-      // For reclaim mode, just send a request to support instead of processing
-      console.log('Reclaim request sent to support:', {
-        workspace: workspaceName,
-        amount: data.amount,
-        allocatedPackage: currentWorkspaceBalance,
-        remaining: maxAmount,
-      })
-      // TODO: Implement actual support request API call
-      toast.success('Reclaim request has been sent to Support team')
-    } else {
-      // For allocate mode, process normally
-      onConfirm(data.amount)
-    }
+    // Process the allocation or reclaim operation
+    onConfirm(data.amount)
     reset()
     onOpenChange(false)
   }
@@ -123,7 +110,7 @@ export function AllocationModal({
         <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-lg p-6 w-full max-w-md z-50">
           <div className="flex items-center justify-between mb-4">
             <Dialog.Title className="text-xl font-semibold text-[var(--sc-text)]">
-              {mode === 'allocate' ? 'Allocate Smartwords' : 'Request Reclaim Smartwords'}
+              {mode === 'allocate' ? 'Allocate Smartwords' : 'Reclaim Smartwords'}
             </Dialog.Title>
             <Dialog.Close asChild>
               <button
@@ -166,16 +153,9 @@ export function AllocationModal({
               </div>
             </div>
 
-            {mode === 'reclaim' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-yellow-800">
-                  Reclaiming Smartwords operations are done by our Support team.
-                </p>
-              </div>
-            )}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Amount to {mode === 'allocate' ? 'allocate' : 'request reclaim for'}
+                Amount to {mode === 'allocate' ? 'allocate' : 'reclaim'}
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -222,23 +202,21 @@ export function AllocationModal({
               )}
             </div>
 
-            {mode === 'allocate' && (
-              <div className="bg-blue-50 rounded-lg p-3 space-y-2 text-sm">
-                <div className="font-medium text-blue-900 mb-2">Result</div>
-                <div className="flex justify-between text-blue-700">
-                  <span>Workspace allocation:</span>
-                  <span className="font-medium">
-                    {projectedWorkspaceBalance < 0
-                      ? '0'
-                      : formatNumber(projectedWorkspaceBalance)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-blue-700">
-                  <span>Organization balance:</span>
-                  <span className="font-medium">{formatNumber(projectedOrgBalance)}</span>
-                </div>
+            <div className="bg-blue-50 rounded-lg p-3 space-y-2 text-sm">
+              <div className="font-medium text-blue-900 mb-2">Result</div>
+              <div className="flex justify-between text-blue-700">
+                <span>Workspace allocation:</span>
+                <span className="font-medium">
+                  {projectedWorkspaceBalance < 0
+                    ? '0'
+                    : formatNumber(projectedWorkspaceBalance)}
+                </span>
               </div>
-            )}
+              <div className="flex justify-between text-blue-700">
+                <span>Organization balance:</span>
+                <span className="font-medium">{formatNumber(projectedOrgBalance)}</span>
+              </div>
+            </div>
 
             <div className="flex gap-3 justify-end pt-4">
               <Dialog.Close asChild>
@@ -254,7 +232,7 @@ export function AllocationModal({
                 disabled={amount <= 0 || !!errors.amount}
                 className="px-4 py-2 text-sm font-medium text-white bg-[var(--sc-primary)] rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               >
-                {mode === 'reclaim' ? 'Send Request' : 'Confirm'}
+                Confirm
               </button>
             </div>
           </form>
