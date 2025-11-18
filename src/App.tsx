@@ -8,6 +8,7 @@ import OrgSettingsPage from './pages/OrgSettingsPage'
 import OrgManagementPage from './pages/OrgManagementPage'
 import ChatsPage from './pages/ChatsPage'
 import LoginPage from './pages/LoginPage'
+import SmartwordsUsageReportPage from './pages/SmartwordsUsageReportPage'
 
 // Component to handle GitHub Pages 404.html redirect
 function RedirectHandler() {
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/org/management" element={<OrgManagementPage />} />
             <Route path="/chats" element={<ChatsPage />} />
             <Route path="/chats/:chatId" element={<ChatsPage />} />
+            <Route path="/smartwords-usage-report/:workspaceId" element={<SmartwordsUsageReportPage />} />
             {/* Hub and Work sub-navigation routes to be added per feature */}
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
