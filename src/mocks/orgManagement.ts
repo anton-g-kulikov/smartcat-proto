@@ -89,9 +89,28 @@ export const mockWorkspaces: WorkspaceRow[] = [
     ],
     subscriptionAccess: true, // Toggle ON (default) - using org subscription
     fullAccess: false, // Toggle OFF
-    allocated: 500000, // 500K allocated by default
+    allocated: null, // No direct allocation - has packages instead
+    spent: 0,
+    isMyWorkspace: false,
+  },
+  {
+    id: 'ws3-1',
+    name: 'HR',
+    subscription: 'Enterprise', // Shared by the org
+    admins: [
+      {
+        id: 'es1',
+        name: 'Ester Smith',
+        initial: 'ES',
+        avatarColor: '#ec4899',
+      },
+    ],
+    subscriptionAccess: true, // Toggle ON (default) - using org subscription
+    fullAccess: false, // Toggle OFF
+    allocated: 500000, // 500K allocated - first package
     spent: 187654, // Used from allocated balance (not from org-level)
     isMyWorkspace: false,
+    isPackageRow: true, // Only show package columns
   },
   {
     id: 'ws3-2',
