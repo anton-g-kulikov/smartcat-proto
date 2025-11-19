@@ -61,9 +61,29 @@ export default function OrgManagementPage() {
       const currentSpent = workspace.spent ?? 0
       const remainingBalance = currentAllocated - currentSpent
       
-      // If allocating to a workspace that already has a package, create a new package row
-      if (mode === 'allocate' && workspace.allocated !== null && workspace.allocated > 0) {
-        // Create a new package row
+      // Check if workspace already has package rows (workspaces with same name and isPackageRow: true)
+      const hasExistingPackages = prev.some(ws => 
+        ws.name === workspace.name && ws.isPackageRow && ws.id !== workspaceId
+      )
+      
+      // If allocating to a workspace that already has packages OR has a direct allocation, create a new package row
+      if (mode === 'allocate' && (hasExistingPackages || (workspace.allocated !== null && workspace.allocated > 0))) {
+        const workspaceIndex = prev.findIndex(ws => ws.id === workspaceId)
+        if (workspaceIndex === -1) return prev
+        
+        // If workspace has a direct allocation but no package rows yet, convert it to the first package row
+        const needsConversion = !hasExistingPackages && workspace.allocated !== null && workspace.allocated > 0
+        
+        // Create the first package row from existing allocation (if needed)
+        const firstPackageRow: WorkspaceRow | null = needsConversion ? {
+          ...workspace,
+          id: `${workspaceId}-${Date.now()}-1`, // Unique ID for the first package
+          allocated: workspace.allocated,
+          spent: workspace.spent || 0,
+          isPackageRow: true, // Mark as package row
+        } : null
+        
+        // Create a new package row for the new allocation
         const newPackageRow: WorkspaceRow = {
           ...workspace,
           id: `${workspaceId}-${Date.now()}`, // Unique ID for the new package
@@ -71,11 +91,6 @@ export default function OrgManagementPage() {
           spent: 0, // New package starts with no consumption
           isPackageRow: true, // Mark as package row
         }
-        
-        // Find the index of the workspace and insert the new package row right after it
-        // Also find where other package rows for this workspace end
-        const workspaceIndex = prev.findIndex(ws => ws.id === workspaceId)
-        if (workspaceIndex === -1) return [...prev, newPackageRow]
         
         // Find the last package row for this workspace (if any)
         let insertIndex = workspaceIndex + 1
@@ -87,16 +102,29 @@ export default function OrgManagementPage() {
           }
         }
         
-        // Turn off fullAccess for the main workspace if it's on (since we're allocating a package)
-        const updatedWithFullAccess = prev.map(ws =>
-          ws.id === workspaceId && ws.fullAccess ? { ...ws, fullAccess: false } : ws
-        )
+        // Update the main workspace: set allocated to null, turn off fullAccess
+        const updatedMainWorkspace = {
+          ...workspace,
+          allocated: null, // No direct allocation when using packages
+          spent: 0, // Main workspace doesn't track spent when using packages
+          fullAccess: false, // Turn off fullAccess when allocating packages
+        }
         
-        // Insert the new package row right after the workspace or after its existing packages
+        // Build the new array
+        const beforeWorkspace = prev.slice(0, workspaceIndex)
+        const afterWorkspace = prev.slice(workspaceIndex + 1, insertIndex)
+        const afterPackages = prev.slice(insertIndex)
+        
+        const packagesToInsert = firstPackageRow 
+          ? [firstPackageRow, newPackageRow]
+          : [newPackageRow]
+        
         return [
-          ...updatedWithFullAccess.slice(0, insertIndex),
-          newPackageRow,
-          ...updatedWithFullAccess.slice(insertIndex),
+          ...beforeWorkspace,
+          updatedMainWorkspace,
+          ...afterWorkspace,
+          ...packagesToInsert,
+          ...afterPackages,
         ]
       }
 
