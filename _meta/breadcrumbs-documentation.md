@@ -281,3 +281,4 @@ const showBreadcrumbs = location.pathname !== '/'
 4. **Custom Labels**: Support custom labels per route configuration
 5. **Breadcrumb History**: Track navigation history for better context
 
+

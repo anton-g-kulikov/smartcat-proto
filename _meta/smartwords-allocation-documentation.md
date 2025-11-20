@@ -309,3 +309,4 @@ User clicks "Reclaim"
 - Modal component: `src/components/org-management/AllocationModal.tsx`
 - Allocation logic: `src/pages/OrgManagementPage.tsx` → `handleWorkspaceAllocation`
 
+

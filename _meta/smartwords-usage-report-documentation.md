@@ -348,3 +348,4 @@ SmartwordsUsageReportPage
 - Statistics widget: `src/components/smartwords/StatisticsWidget.tsx`
 - Operations data: `src/mocks/orgManagement.ts` → `mockWorkspaceOperations`
 
+
