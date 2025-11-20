@@ -282,3 +282,4 @@ const showBreadcrumbs = location.pathname !== '/'
 5. **Breadcrumb History**: Track navigation history for better context
 
 
+
