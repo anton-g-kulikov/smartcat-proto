@@ -1,10 +1,25 @@
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
-import * as Select from '@radix-ui/react-select'
 import { z } from 'zod'
-import { X, Plus, Minus, ChevronDown, Check } from 'lucide-react'
+import { X, Plus, Minus, ChevronsUpDown, Check } from 'lucide-react'
 import { Avatar } from '@/components/navigation/Avatar'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface OrganizationOption {
   id: string
@@ -46,6 +61,23 @@ export function MoveSmartwordsModal({
   const availableOrgs = organizations.filter(org => org.id !== currentOrgId)
   const maxAmount = currentOrgBalance
   const schema = createSchema(maxAmount)
+  const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [triggerWidth, setTriggerWidth] = useState<number | undefined>(undefined)
+  const [searchQuery, setSearchQuery] = useState('')
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  
+  useEffect(() => {
+    if (triggerRef.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth)
+    }
+  }, [comboboxOpen])
+
+  // Filter organizations based on search query
+  const filteredOrgs = availableOrgs.filter((org) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return org.name.toLowerCase().includes(query) || org.id.toLowerCase().includes(query)
+  })
   const {
     register,
     handleSubmit,
@@ -126,15 +158,17 @@ export function MoveSmartwordsModal({
               <label className="text-sm font-medium text-gray-700">
                 To organization
               </label>
-              <div className="relative">
-                <Select.Root
-                  value={targetOrgId}
-                  onValueChange={(value) => {
-                    setValue('targetOrgId', value, { shouldValidate: true })
-                  }}
-                >
-                  <Select.Trigger
-                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sc-primary)] bg-white"
+              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    ref={triggerRef}
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={comboboxOpen}
+                    className={cn(
+                      "w-full justify-between px-3 py-2 h-auto border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--sc-primary)] bg-white",
+                      !targetOrgId && "text-gray-500"
+                    )}
                   >
                     <div className="flex items-center gap-2 flex-1 text-left">
                       {selectedOrg ? (
@@ -144,53 +178,85 @@ export function MoveSmartwordsModal({
                             color={selectedOrg.avatarColor}
                             size="sm"
                           />
-                          <Select.Value>
-                            {selectedOrg.name}
-                          </Select.Value>
+                          <span className="text-gray-900">{selectedOrg.name}</span>
                         </>
                       ) : (
-                        <Select.Value placeholder="Select an organization" />
+                        <span>Select an organization</span>
                       )}
                     </div>
-                    <Select.Icon>
-                      <ChevronDown className="w-4 h-4 text-gray-500" />
-                    </Select.Icon>
-                  </Select.Trigger>
-                <Select.Portal>
-                  <Select.Content className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50 min-w-[var(--radix-select-trigger-width)]">
-                    <Select.Viewport className="p-1">
-                      {availableOrgs.map((org) => (
-                        <Select.Item
-                          key={org.id}
-                          value={org.id}
-                          className="relative flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer focus:outline-none focus:bg-gray-100 rounded pl-8"
-                        >
-                          <Select.ItemIndicator className="absolute left-2 flex items-center justify-center">
-                            <Check className="w-4 h-4" />
-                          </Select.ItemIndicator>
-                          <Avatar
-                            initial={org.initial}
-                            color={org.avatarColor}
-                            size="sm"
-                          />
-                          <Select.ItemText>
-                            <div className="flex flex-col">
-                              <span>{org.name}</span>
-                              <span className="text-xs text-gray-500">
-                                Balance: {formatNumber(org.currentBalance)}
-                              </span>
-                            </div>
-                          </Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                  </Select.Content>
-                </Select.Portal>
-                </Select.Root>
-                {errors.targetOrgId && (
-                  <p className="text-sm text-red-600 mt-1">{errors.targetOrgId.message}</p>
-                )}
-              </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="p-0" 
+                  align="start"
+                  style={{ width: triggerWidth ? `${triggerWidth}px` : 'auto' }}
+                >
+                  <Command 
+                    shouldFilter={false} 
+                    className="rounded-lg border-0"
+                    style={{ overflow: 'visible' }}
+                  >
+                    <CommandInput 
+                      placeholder="Search organizations..." 
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                    />
+                    <div 
+                      className="max-h-[300px] overflow-y-auto overflow-x-hidden"
+                      style={{ 
+                        overscrollBehavior: 'contain',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
+                      onWheel={(e) => {
+                        // Ensure wheel events work
+                        const target = e.currentTarget
+                        if (target.scrollHeight > target.clientHeight) {
+                          e.stopPropagation()
+                        }
+                      }}
+                    >
+                      <CommandList className="overflow-visible max-h-none">
+                        <CommandEmpty>No organization found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredOrgs.map((org) => (
+                            <CommandItem
+                              key={org.id}
+                              value={`${org.name} ${org.id}`}
+                              onSelect={() => {
+                                setValue('targetOrgId', org.id, { shouldValidate: true })
+                                setComboboxOpen(false)
+                              }}
+                              className="flex items-center gap-2 px-3 py-2 cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  targetOrgId === org.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <Avatar
+                                initial={org.initial}
+                                color={org.avatarColor}
+                                size="sm"
+                              />
+                              <div className="flex flex-col flex-1">
+                                <span>{org.name}</span>
+                                <span className="text-xs text-gray-500">
+                                  Balance: {formatNumber(org.currentBalance)}
+                                </span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </div>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {errors.targetOrgId && (
+                <p className="text-sm text-red-600 mt-1">{errors.targetOrgId.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">

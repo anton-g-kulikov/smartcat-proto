@@ -10,25 +10,31 @@ interface ProgressBarProps {
   initialTotal: number // Initial subscription amount (for scale)
   allocations?: WorkspaceAllocation[] // Workspace allocations to display
   totalSpent?: number // Total spent from all workspaces
+  totalMoved?: number // Total moved to other organizations
 }
 
-export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: ProgressBarProps) {
+export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0, totalMoved = 0 }: ProgressBarProps) {
   // Calculate total allocated across all workspaces
   const totalAllocated = allocations.reduce((sum, alloc) => sum + (alloc.allocated || 0), 0)
   // Spent amount (from workspaces) - this is what goes in the light purple section
   const spent = totalSpent
-  // Remaining available balance = initialTotal - totalAllocated - spent
-  // This represents what's still available at org level (excluding allocated and spent)
-  const remaining = initialTotal - totalAllocated - spent
+  // Moved amount (to other organizations)
+  const moved = totalMoved
+  // Remaining available balance = initialTotal - totalAllocated - spent - moved
+  // This represents what's still available at org level (excluding allocated, spent, and moved)
+  const remaining = initialTotal - totalAllocated - spent - moved
   
   // Calculate percentages based on initial total
   const remainingPercentage = (remaining / initialTotal) * 100
   const allocatedPercentage = (totalAllocated / initialTotal) * 100
+  const movedPercentage = (moved / initialTotal) * 100
   const spentPercentage = (spent / initialTotal) * 100
   
-  // Calculate position for single combined allocated section
-  // Order: remaining (purple) -> allocated (pink) -> spent (light purple)
+  // Calculate positions for sections
+  // Order: remaining (purple) -> allocated (pink) -> moved (orange) -> spent (light purple)
   const allocatedLeft = (remaining / initialTotal) * 100
+  const movedLeft = ((remaining + totalAllocated) / initialTotal) * 100
+  const spentLeft = ((remaining + totalAllocated + moved) / initialTotal) * 100
   
   // Only show 0 and initialTotal as tick markers
   const tickMarkers = [0, initialTotal]
@@ -89,6 +95,30 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
               </Tooltip.Portal>
             </Tooltip.Root>
           )}
+          {/* Moved portion (orange section) - between allocated and spent */}
+          {moved > 0 && (
+            <Tooltip.Root>
+              <Tooltip.Trigger asChild>
+                <div
+                  className="absolute top-0 h-full rounded-full transition-all cursor-pointer"
+                  style={{
+                    left: `${movedLeft}%`,
+                    width: `${movedPercentage}%`,
+                    backgroundColor: 'rgb(249, 115, 22)', // Orange color for moved
+                  }}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  className="bg-gray-900 text-white text-xs rounded px-2 py-1 max-w-xs z-50"
+                  sideOffset={5}
+                >
+                  Moved: {formatNumber(moved)}
+                  <Tooltip.Arrow className="fill-gray-900" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          )}
           {/* Spent portion (light purple) - rightmost */}
           {spent > 0 && (
             <Tooltip.Root>
@@ -97,7 +127,7 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
                   className="absolute left-0 top-0 h-full bg-purple-50 rounded-full cursor-pointer"
                   style={{ 
                     width: `${spentPercentage}%`, 
-                    left: `${remainingPercentage + allocatedPercentage}%` 
+                    left: `${spentLeft}%` 
                   }}
                 />
               </Tooltip.Trigger>
@@ -177,12 +207,41 @@ export function ProgressBar({ initialTotal, allocations = [], totalSpent = 0 }: 
           </div>
         )}
         
+        {/* Moved section label - combined */}
+        {moved > 0 && movedPercentage > 5 && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: `${movedLeft}%`,
+              width: `${movedPercentage}%`,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              className="text-xs font-medium"
+              style={{
+                color: 'rgb(249, 115, 22)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '100%',
+                padding: '0 2px',
+              }}
+            >
+              Moved: {formatNumber(moved)}
+            </div>
+          </div>
+        )}
+        
         {/* Spent section label (light purple) - matching section color */}
         {spent > 0 && spentPercentage > 5 && (
           <div
             className="absolute text-xs font-medium pointer-events-none"
             style={{
-              left: `${remainingPercentage + allocatedPercentage + (spentPercentage / 2)}%`,
+              left: `${spentLeft + (spentPercentage / 2)}%`,
               transform: 'translateX(-50%)',
               color: 'rgb(196, 181, 253)', // Light purple matching bg-purple-50
               whiteSpace: 'nowrap',

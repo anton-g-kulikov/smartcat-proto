@@ -16,9 +16,10 @@ interface SmartwordBalanceSectionProps {
   organizations: OrganizationOption[]
   workspaces: WorkspaceRow[]
   onMoveSmartwords: (targetOrgId: string, amount: number) => void
+  totalMoved?: number
 }
 
-export function SmartwordBalanceSection({ org, organizations, workspaces, onMoveSmartwords }: SmartwordBalanceSectionProps) {
+export function SmartwordBalanceSection({ org, organizations, workspaces, onMoveSmartwords, totalMoved = 0 }: SmartwordBalanceSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleMoveConfirm = (targetOrgId: string, amount: number) => {
@@ -70,8 +71,8 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
     .reduce((sum, ws) => sum + (ws.allocated || 0), 0)
   
   // Calculate available org balance (matching progress bar logic)
-  // Available org balance = initialTotal - totalAllocated - orgLevelSpent
-  const availableBalance = org.initialSmartwordsTotal - totalAllocated - totalSpent
+  // Available org balance = initialTotal - totalAllocated - orgLevelSpent - totalMoved
+  const availableBalance = org.initialSmartwordsTotal - totalAllocated - totalSpent - totalMoved
 
   return (
     <>
@@ -82,13 +83,14 @@ export function SmartwordBalanceSection({ org, organizations, workspaces, onMove
             onClick={() => setIsModalOpen(true)}
             className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
           >
-            Move Smartwords
+            Move to another organization
           </button>
         </div>
         <ProgressBar 
           initialTotal={org.initialSmartwordsTotal}
           allocations={allocations}
           totalSpent={totalSpent}
+          totalMoved={totalMoved}
         />
       </section>
 
