@@ -19,6 +19,7 @@ export default function OrgManagementPage() {
   const [workspaces, setWorkspaces] = useState<WorkspaceRow[]>(mockWorkspaces)
   const [organizations, setOrganizations] = useState(mockOrganizations)
   const [movedAmounts, setMovedAmounts] = useState<MovedAmount[]>([])
+  const [multiOrgAdminEnabled, setMultiOrgAdminEnabled] = useState(false)
 
   // Calculate available org balance (matching progress bar logic)
   // Only count spent from workspaces WITHOUT allocated packages
@@ -246,9 +247,20 @@ export default function OrgManagementPage() {
     console.log('Add new admin clicked')
   }
 
+  // Handle multi org admin toggle
+  const handleMultiOrgAdminToggle = (checked: boolean) => {
+    setMultiOrgAdminEnabled(checked)
+    // TODO: Implement multi org admin functionality
+    console.log('Multi Org Admin toggled:', checked)
+  }
+
   return (
     <div className="min-h-full p-8 space-y-6">
-      <OrgHeaderSection org={org} />
+      <OrgHeaderSection 
+        org={org}
+        multiOrgAdminEnabled={multiOrgAdminEnabled}
+        onMultiOrgAdminToggle={handleMultiOrgAdminToggle}
+      />
       <StatsCardsRow 
         org={org}
         onToggleSubscriptionAccess={handleToggleOrgSubscriptionAccess}
@@ -263,6 +275,7 @@ export default function OrgManagementPage() {
         workspaces={workspaces}
         onMoveSmartwords={handleMoveSmartwords}
         totalMoved={totalMoved}
+        multiOrgAdminEnabled={multiOrgAdminEnabled}
       />
       <WorkspacesSection 
         workspaces={workspaces}
