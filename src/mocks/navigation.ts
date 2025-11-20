@@ -144,9 +144,9 @@ export const mockWorkspaces: Workspace[] = [
 
 export const mockUser: User = {
   id: '1',
-  name: 'Anton Kulikov',
-  email: 'a.kulikov@smartcat.ai',
-  initial: 'AK',
+  name: 'Smartcat User',
+  email: 'user@smartcat.ai',
+  initial: 'SU',
   avatarColor: '#a855f7', // purple
   role: 'Administrator',
   region: 'Europe',
