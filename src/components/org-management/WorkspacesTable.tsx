@@ -253,6 +253,8 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
               />
             )
           }
+          // For regular workspaces, only show reclaim if they have allocated packages
+          const hasAllocated = hasAllocatedPackages(workspace)
           return (
             <ActionsMenu
               workspaceId={workspace.id}
@@ -262,15 +264,15 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
               onAllocate={() =>
                 setAllocationModal({ open: true, workspace, mode: 'allocate' })
               }
-              onReclaim={workspace.isNonReclaimable ? undefined : () =>
+              onReclaim={hasAllocated && !workspace.isNonReclaimable ? () =>
                 setAllocationModal({ open: true, workspace, mode: 'reclaim' })
-              }
+              : undefined}
             />
           )
         },
       }),
     ],
-    [onToggleFullAccess, onToggleSubscriptionAccess, onAllocate, navigate]
+    [onToggleFullAccess, onToggleSubscriptionAccess, onAllocate, navigate, workspaces]
   )
 
   // Group workspaces by name
@@ -297,6 +299,17 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
     
     return Array.from(groups.values())
   }, [workspaces])
+
+  // Helper function to check if a workspace has allocated packages
+  const hasAllocatedPackages = (workspace: WorkspaceRow): boolean => {
+    // Check if workspace has a direct allocation
+    if (workspace.allocated !== null && workspace.allocated > 0) {
+      return true
+    }
+    // Check if workspace has package rows
+    const group = groupedWorkspaces.find(g => g.main.id === workspace.id)
+    return group ? group.packages.length > 0 : false
+  }
 
   const table = useReactTable({
     data: workspaces,
@@ -470,6 +483,8 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
                             </span>
                           )
                         } else if (columnId === 'actions') {
+                          // For accordion headers, we know hasPackages is true, so we show reclaim
+                          const hasAllocated = hasPackages || hasAllocatedPackages(group.main)
                           content = (
                             <ActionsMenu
                               workspaceId={group.main.id}
@@ -479,9 +494,9 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
                               onAllocate={() =>
                                 setAllocationModal({ open: true, workspace: group.main, mode: 'allocate' })
                               }
-                              onReclaim={group.main.isNonReclaimable ? undefined : () =>
+                              onReclaim={hasAllocated && !group.main.isNonReclaimable ? () =>
                                 setAllocationModal({ open: true, workspace: group.main, mode: 'reclaim' })
-                              }
+                              : undefined}
                             />
                           )
                         }
