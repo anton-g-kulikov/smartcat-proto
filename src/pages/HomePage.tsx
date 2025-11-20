@@ -21,7 +21,7 @@ const availablePages: PageLink[] = [
   {
     path: '/chats',
     label: 'Chats',
-    description: 'AI-powered chat interface for conversations',
+    description: 'Chat interface for conversations with Smartcat Agents',
     icon: MessageCircle,
   },
 ]
