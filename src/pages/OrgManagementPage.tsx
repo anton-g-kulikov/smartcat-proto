@@ -6,10 +6,19 @@ import { StatsCardsRow } from '@/components/org-management/StatsCardsRow'
 import { SmartwordBalanceSection } from '@/components/org-management/SmartwordBalanceSection'
 import { WorkspacesSection } from '@/components/org-management/WorkspacesSection'
 
+interface MovedAmount {
+  id: string
+  targetOrgId: string
+  targetOrgName: string
+  amount: number
+  timestamp: string
+}
+
 export default function OrgManagementPage() {
   const [org, setOrg] = useState<OrgSummary>(mockOrgSummary)
   const [workspaces, setWorkspaces] = useState<WorkspaceRow[]>(mockWorkspaces)
   const [organizations, setOrganizations] = useState(mockOrganizations)
+  const [movedAmounts, setMovedAmounts] = useState<MovedAmount[]>([])
 
   // Calculate available org balance (matching progress bar logic)
   // Only count spent from workspaces WITHOUT allocated packages
@@ -27,11 +36,28 @@ export default function OrgManagementPage() {
     .filter(ws => ws.allocated !== null && (ws.allocated || 0) > 0)
     .reduce((sum, ws) => sum + (ws.allocated || 0), 0)
   
-  // Available org balance = initialTotal - totalAllocated - orgLevelSpent
-  const availableOrgBalance = org.initialSmartwordsTotal - totalAllocated - orgLevelSpent
+  // Calculate total moved to other organizations
+  const totalMoved = movedAmounts.reduce((sum, move) => sum + move.amount, 0)
+  
+  // Available org balance = initialTotal - totalAllocated - orgLevelSpent - totalMoved
+  const availableOrgBalance = org.initialSmartwordsTotal - totalAllocated - orgLevelSpent - totalMoved
 
   // Handle moving Smartwords between organizations
   const handleMoveSmartwords = (targetOrgId: string, amount: number) => {
+    // Find target organization name
+    const targetOrg = organizations.find(org => org.id === targetOrgId)
+    const targetOrgName = targetOrg?.name || 'Unknown Organization'
+
+    // Track the moved amount
+    const newMove: MovedAmount = {
+      id: `move-${Date.now()}`,
+      targetOrgId,
+      targetOrgName,
+      amount,
+      timestamp: new Date().toISOString(),
+    }
+    setMovedAmounts(prev => [...prev, newMove])
+
     // Update current organization (decrease total balance - moving Smartwords out)
     setOrg(prev => ({
       ...prev,
@@ -236,6 +262,7 @@ export default function OrgManagementPage() {
         organizations={organizations}
         workspaces={workspaces}
         onMoveSmartwords={handleMoveSmartwords}
+        totalMoved={totalMoved}
       />
       <WorkspacesSection 
         workspaces={workspaces}
