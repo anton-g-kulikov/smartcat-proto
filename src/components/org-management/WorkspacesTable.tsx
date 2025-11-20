@@ -483,8 +483,11 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
                             </span>
                           )
                         } else if (columnId === 'actions') {
-                          // For accordion headers, we know hasPackages is true, so we show reclaim
+                          // For accordion headers: hide reclaim if there are multiple packages
+                          // Show reclaim only if there's a single package or direct allocation (no packages)
+                          const hasMultiplePackages = group.packages.length > 1
                           const hasAllocated = hasPackages || hasAllocatedPackages(group.main)
+                          const shouldShowReclaim = hasAllocated && !hasMultiplePackages && !group.main.isNonReclaimable
                           content = (
                             <ActionsMenu
                               workspaceId={group.main.id}
@@ -494,7 +497,7 @@ export function WorkspacesTable({ workspaces, onToggleFullAccess, onToggleSubscr
                               onAllocate={() =>
                                 setAllocationModal({ open: true, workspace: group.main, mode: 'allocate' })
                               }
-                              onReclaim={hasAllocated && !group.main.isNonReclaimable ? () =>
+                              onReclaim={shouldShowReclaim ? () =>
                                 setAllocationModal({ open: true, workspace: group.main, mode: 'reclaim' })
                               : undefined}
                             />
