@@ -436,6 +436,3 @@ WorkSubNav
 - **App Layout**: Wraps pages with navigation panel
 - **Chats**: Special toggle behavior when on chats page
 - **Organization Management**: Accessible via Hub sub-navigation or organization menu
-
-
-

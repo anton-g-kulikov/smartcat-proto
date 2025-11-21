@@ -308,6 +308,3 @@ User clicks "Reclaim"
 - Uses Radix UI Dialog for modal
 - Modal component: `src/components/org-management/AllocationModal.tsx`
 - Allocation logic: `src/pages/OrgManagementPage.tsx` → `handleWorkspaceAllocation`
-
-
-

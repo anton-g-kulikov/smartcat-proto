@@ -280,6 +280,3 @@ const showBreadcrumbs = location.pathname !== '/'
 3. **Workspace/Organization Names**: Fetch from API instead of mock data
 4. **Custom Labels**: Support custom labels per route configuration
 5. **Breadcrumb History**: Track navigation history for better context
-
-
-

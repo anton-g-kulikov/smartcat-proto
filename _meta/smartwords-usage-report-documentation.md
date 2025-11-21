@@ -347,6 +347,3 @@ SmartwordsUsageReportPage
 - Main page component: `src/pages/SmartwordsUsageReportPage.tsx`
 - Statistics widget: `src/components/smartwords/StatisticsWidget.tsx`
 - Operations data: `src/mocks/orgManagement.ts` → `mockWorkspaceOperations`
-
-
-

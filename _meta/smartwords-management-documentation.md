@@ -312,6 +312,3 @@ OrgManagementPage
 - Mock data in `src/mocks/orgManagement.ts`
 - Types defined in `src/types/orgManagement.ts`
 - Main page component: `src/pages/OrgManagementPage.tsx`
-
-
-
