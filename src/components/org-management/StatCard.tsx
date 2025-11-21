@@ -14,6 +14,7 @@ interface StatCardProps {
   onSwitchChange?: (checked: boolean) => void
   buttonLabel?: string
   onButtonClick?: () => void
+  buttonDisabled?: boolean
 }
 
 export function StatCard({ 
@@ -26,6 +27,7 @@ export function StatCard({
   onSwitchChange,
   buttonLabel,
   onButtonClick,
+  buttonDisabled = false,
 }: StatCardProps) {
   return (
     <div className="rounded-2xl bg-[var(--sc-surface)] shadow-card p-4">
@@ -79,6 +81,7 @@ export function StatCard({
               variant="outline"
               size="sm"
               onClick={onButtonClick}
+              disabled={buttonDisabled}
               className="w-full text-xs"
             >
               {buttonLabel}

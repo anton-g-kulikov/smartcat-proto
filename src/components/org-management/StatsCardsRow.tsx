@@ -63,6 +63,7 @@ export function StatsCardsRow({
         icon={Folder}
         buttonLabel="Create new workspace"
         onButtonClick={onCreateWorkspace}
+        buttonDisabled={true}
       />
       <StatCard
         label="Organization admins"
@@ -71,6 +72,7 @@ export function StatsCardsRow({
         orgAdmins={org.organizationAdmins}
         buttonLabel="Add new admin"
         onButtonClick={onAddAdmin}
+        buttonDisabled={true}
       />
     </section>
   )
